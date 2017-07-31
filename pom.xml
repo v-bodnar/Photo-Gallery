@@ -4,12 +4,12 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>net.omb</groupId>
-	<artifactId>photo-gallery</artifactId>
+	<artifactId>photo-gallery-server</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>photo-gallery</name>
-	<description>Demo project for Spring Boot</description>
+	<name>photo-gallery-server</name>
+	<description>Secure photo gallery powered by Spring</description>
 
 	<parent>
 		<groupId>org.springframework.boot</groupId>

@@ -1,12 +1,34 @@
 package net.omb.photogallery;
 
+import net.omb.photogallery.security.SpringSecurityAuditorAware;
+import org.apache.derby.drda.NetworkServerControl;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+import org.springframework.data.domain.AuditorAware;
 
-@SpringBootApplication
+import java.io.PrintWriter;
+import java.net.InetAddress;
+
+@SpringBootApplication(scanBasePackages = {"net.omb.photogallery"})
 public class PhotoGalleryApplication {
-
 	public static void main(String[] args) {
+		startDerbyNetworkServer();
 		SpringApplication.run(PhotoGalleryApplication.class, args);
+	}
+	@Bean
+	public AuditorAware<String> myAuditorProvider() {
+		return new SpringSecurityAuditorAware();
+	}
+
+	private static void startDerbyNetworkServer(){
+		try {
+			NetworkServerControl server = new NetworkServerControl
+					(InetAddress.getByName("localhost"),1527);
+
+			server.start(new PrintWriter(System.out));
+		}catch (Exception e) {
+			throw new RuntimeException("Could not start derby network server" + e.getMessage());
+		}
 	}
 }

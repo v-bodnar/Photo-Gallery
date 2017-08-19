@@ -66,6 +66,7 @@ fabric.properties
 ### Maven template
 mvnw
 mvnw.cmd
+.mvn/
 pom.xml.tag
 pom.xml.releaseBackup
 pom.xml.versionsBackup

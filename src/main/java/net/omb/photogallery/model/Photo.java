@@ -9,16 +9,18 @@ import java.util.List;
 @Entity
 public class Photo extends GenericEntity<Photo> implements Comparable<Photo> {
     private static final long serialVersionUID = 860868664458326184L;
-
+    @Column(nullable = false)
     private String path;
     private String name;
     private String extension;
     private Long size;
     @Column(length = 4000)
     private String description;
-    @OneToOne(optional=false)
+
+    @OneToOne(optional=false, mappedBy = "photo", cascade = CascadeType.ALL)
     private ExifData exifData;
-    @ManyToMany(mappedBy="photos")
+
+    @ManyToMany(mappedBy = "photos")
     private List<Tag> tags;
 
     public String getPath() {

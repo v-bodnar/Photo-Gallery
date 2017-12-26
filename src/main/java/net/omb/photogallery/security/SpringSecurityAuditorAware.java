@@ -9,6 +9,8 @@ import org.springframework.data.domain.AuditorAware;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.util.Optional;
+
 /**
  * Created by volodymyr.bodnar on 6/23/2017.
  */
@@ -18,7 +20,7 @@ public class SpringSecurityAuditorAware implements AuditorAware<String> {
     @Autowired
     private UsersRepository usersRepository;
 
-    public String getCurrentAuditor() {
+    public Optional<String> getCurrentAuditor() {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -27,14 +29,14 @@ public class SpringSecurityAuditorAware implements AuditorAware<String> {
             log.error("No authenticated user!");
             return null;
         }
-        User user = usersRepository.findOneByEmail(((org.springframework.security.core.userdetails.User)authentication.getPrincipal()).getUsername()).orElse(null);
-        if(user == null){
-            //todo
-            log.error("No authenticated user!");
-            return null;
-        }else {
-            return user.getEmail();
+        if(authentication.getPrincipal() instanceof User) {
+            User user = (User) authentication.getPrincipal();
+            if ("bodik@list.ru".equals(user.getEmail()) && user.getId() == 0) {
+                return Optional.of(user.getUsername());
+            }
         }
+        User user = usersRepository.findOneByEmail(((org.springframework.security.core.userdetails.User)authentication.getPrincipal()).getUsername()).get();
+        return Optional.of(user.getUsername());
 
     }
 }

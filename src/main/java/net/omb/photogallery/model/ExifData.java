@@ -1,7 +1,6 @@
 package net.omb.photogallery.model;
 
-import javax.persistence.Entity;
-import javax.persistence.OneToOne;
+import javax.persistence.*;
 
 /**
  * Created by volodymyr.bodnar on 7/31/2017.
@@ -13,9 +12,11 @@ public class ExifData extends GenericEntity<ExifData>{
 
     private String cameraModel;
     private long recordedDate;
-    private long width;
-    private long height;
-    @OneToOne(mappedBy = "exifData")
+    private int width;
+    private int height;
+    private String dominantColor;
+    @OneToOne(fetch = FetchType.LAZY)
+    @PrimaryKeyJoinColumn
     private Photo photo;
 
     public String getCameraModel() {
@@ -34,19 +35,19 @@ public class ExifData extends GenericEntity<ExifData>{
         this.recordedDate = recordedDate;
     }
 
-    public long getWidth() {
+    public int getWidth() {
         return width;
     }
 
-    public void setWidth(long width) {
+    public void setWidth(int width) {
         this.width = width;
     }
 
-    public long getHeight() {
+    public int getHeight() {
         return height;
     }
 
-    public void setHeight(long height) {
+    public void setHeight(int height) {
         this.height = height;
     }
 
@@ -56,5 +57,13 @@ public class ExifData extends GenericEntity<ExifData>{
 
     public void setPhoto(Photo photo) {
         this.photo = photo;
+    }
+
+    public String getDominantColor() {
+        return dominantColor;
+    }
+
+    public void setDominantColor(String dominantColor) {
+        this.dominantColor = dominantColor;
     }
 }

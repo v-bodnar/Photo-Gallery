@@ -4,7 +4,6 @@ import net.omb.photogallery.security.SpringSecurityAuditorAware;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -24,7 +23,7 @@ public class PersistenceConfig {
         return new JdbcTemplate(dataSource);
     }
     @Bean
-    AuditorAware<String> auditorProvider() {
+    public SpringSecurityAuditorAware auditorProvider() {
         return new SpringSecurityAuditorAware();
     }
 }

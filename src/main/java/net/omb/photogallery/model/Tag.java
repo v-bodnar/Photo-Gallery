@@ -22,6 +22,17 @@ public class Tag extends GenericEntity<Tag> {
     @JoinTable(name="TAGS_PHOTOS")
     private List<Photo> photos;
 
+    public Tag() {
+    }
+
+    public Tag(String name) {
+        this.name = name;
+    }
+
+    public Tag(String name, String description) {
+        this.name = name;
+        this.description = description;
+    }
 
 
 }

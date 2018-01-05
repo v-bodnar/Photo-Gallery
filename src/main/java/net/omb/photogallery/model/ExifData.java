@@ -1,5 +1,8 @@
 package net.omb.photogallery.model;
 
+import javafx.geometry.Orientation;
+import net.omb.photogallery.services.ImageService;
+
 import javax.persistence.*;
 
 /**
@@ -15,9 +18,10 @@ public class ExifData extends GenericEntity<ExifData>{
     private int width;
     private int height;
     private String dominantColor;
-    @OneToOne(fetch = FetchType.LAZY)
-    @PrimaryKeyJoinColumn
+    @OneToOne(optional=false, mappedBy = "exifData")
     private Photo photo;
+    private int orientation;
+
 
     public String getCameraModel() {
         return cameraModel;
@@ -66,4 +70,13 @@ public class ExifData extends GenericEntity<ExifData>{
     public void setDominantColor(String dominantColor) {
         this.dominantColor = dominantColor;
     }
+
+    public int getOrientation() {
+        return orientation;
+    }
+
+    public void setOrientation(int orientation) {
+        this.orientation = orientation;
+    }
+
 }

@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.Properties;
 
 public class PropertiesUtil {
@@ -16,18 +17,14 @@ public class PropertiesUtil {
     public static Object getProperty(String key) {
         try {
             if(properties == null){
-                File propertiesFile  = new File(configPath);
-
-                if (!propertiesFile.exists() || !propertiesFile.canRead()) {
+                properties = new Properties();
+                InputStream in = PropertiesUtil.class.getClassLoader().getResourceAsStream(configPath);
+                if (in == null || in.available() == 0) {
                     new FileNotFoundException();
                 }
-
-                properties = new Properties();
-                FileInputStream in = new FileInputStream(propertiesFile);
                 properties.load(in);
                 in.close();
             }
-
             return properties.getProperty(key);
         } catch (java.io.IOException e) {
             log.error("Error during config read!", e);

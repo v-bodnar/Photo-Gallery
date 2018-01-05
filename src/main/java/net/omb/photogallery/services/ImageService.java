@@ -1,25 +1,32 @@
 package net.omb.photogallery.services;
 
+import com.drew.imaging.ImageMetadataReader;
+import com.drew.imaging.ImageProcessingException;
+import com.drew.metadata.Metadata;
+import com.drew.metadata.MetadataException;
+import com.drew.metadata.exif.ExifDirectoryBase;
+import com.drew.metadata.exif.ExifIFD0Directory;
+import com.drew.metadata.file.FileSystemDirectory;
+import com.drew.metadata.jpeg.JpegDirectory;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import net.omb.photogallery.annotations.LogExecutionTime;
 import net.omb.photogallery.exceptions.FileReadException;
+import net.omb.photogallery.model.ExifData;
+import net.omb.photogallery.model.Photo;
 import net.omb.photogallery.model.json.Image;
-import net.omb.photogallery.model.json.Preview;
+import net.omb.photogallery.repositories.PhotoRepository;
 import net.omb.photogallery.utils.colorthief.ColorThief;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.tomcat.util.codec.binary.Base64;
 import org.imgscalr.Scalr;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-import java.awt.image.BaseMultiResolutionImage;
 import java.awt.image.BufferedImage;
-import java.awt.image.MultiResolutionImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -29,23 +36,27 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import static com.drew.metadata.file.FileSystemDirectory.TAG_FILE_SIZE;
 import static net.omb.photogallery.services.ImageService.Size.*;
+import static org.imgscalr.Scalr.Rotation.CW_180;
+import static org.imgscalr.Scalr.Rotation.CW_270;
+import static org.imgscalr.Scalr.Rotation.CW_90;
 
 /**
  * Created by volodymyr.bodnar on 9/17/2017.
  */
 
 @Service
+@LogExecutionTime
 public class ImageService {
     protected static final Logger log = LoggerFactory.getLogger(ImageService.class);
     private static final String jsonFileName = "data.json";
     private static final ObjectMapper jacksonMapper = new ObjectMapper();
     private static final List<String> imagesExtensions = new ArrayList<>();
-    private static final String GET_IMAGE_SERVICE = "getImage";
+    private static final String GET_IMAGE_SERVICE = "api/getImage";
 
     static {
         imagesExtensions.add("jpg");
@@ -54,6 +65,7 @@ public class ImageService {
         imagesExtensions.add("gif");
         imagesExtensions.add("png");
     }
+
     @Value("${root.gallery.dir}")
     private String imagesFolder;
 
@@ -77,6 +89,12 @@ public class ImageService {
 
     @Value("${size.xl.enabled:false}")
     private boolean xlEnabled;
+
+    @Autowired
+    private PhotoService photoService;
+
+    @Autowired
+    private PhotoRepository photoRepository;
 //
 //    @Value("${size.xxs.height}")
 //    private int heightXXS;
@@ -119,7 +137,7 @@ public class ImageService {
         previewFolders.add(Paths.get(Size.L.name()));
         previewFolders.add(Paths.get(Size.XL.name()));
 
-       // generateGalleryJson(imagesRootFolder);
+        // generateGalleryJson(imagesRootFolder);
         createPreviewFoldersStructure(imagesRootFolder);
 
         //jacksonMapper.setVisibility(JsonMethod.FIELD, JsonAutoDetect.Visibility.ANY);
@@ -129,17 +147,18 @@ public class ImageService {
 
     private void createPreviewFoldersStructure(Path folder) {
         log.info("Creating preview folders structure");
-        try (DirectoryStream<Path> ds = Files.newDirectoryStream(folder)){
+        try (DirectoryStream<Path> ds = Files.newDirectoryStream(folder)) {
             for (Path previewFolder : previewFolders) {
-                if(folder.equals(Paths.get(imagesFolder))) continue; //skipping creation of preview folders in root folder
-                if(!xxsEnabled && previewFolder.getFileName().toString().equals(Size.XXS.name())) continue;
-                if(!xsEnabled && previewFolder.getFileName().toString().equals(Size.XS.name())) continue;
-                if(!sEnabled && previewFolder.getFileName().toString().equals(Size.S.name())) continue;
-                if(!mEnabled && previewFolder.getFileName().toString().equals(Size.M.name())) continue;
-                if(!lEnabled && previewFolder.getFileName().toString().equals(Size.L.name())) continue;
-                if(!xlEnabled && previewFolder.getFileName().toString().equals(Size.XL.name())) continue;
+                if (folder.equals(Paths.get(imagesFolder)))
+                    continue; //skipping creation of preview folders in root folder
+                if (!xxsEnabled && previewFolder.getFileName().toString().equals(Size.XXS.name())) continue;
+                if (!xsEnabled && previewFolder.getFileName().toString().equals(Size.XS.name())) continue;
+                if (!sEnabled && previewFolder.getFileName().toString().equals(Size.S.name())) continue;
+                if (!mEnabled && previewFolder.getFileName().toString().equals(Size.M.name())) continue;
+                if (!lEnabled && previewFolder.getFileName().toString().equals(Size.L.name())) continue;
+                if (!xlEnabled && previewFolder.getFileName().toString().equals(Size.XL.name())) continue;
 
-                Path createFolder  = Paths.get(folder + File.separator + previewFolder);
+                Path createFolder = Paths.get(folder + File.separator + previewFolder);
                 if (!Files.exists(createFolder) && !Paths.get(imagesFolder).equals(folder)) {
                     log.debug("Folder " + previewFolder + " will be created");
                     Files.createDirectory(createFolder);
@@ -264,45 +283,39 @@ public class ImageService {
 //    }
 
     public byte[] getImage(String path, Size size) {
-        path = imagesFolder + File.separator + path;
-        BufferedImage image;
+        String format = getFormat(Paths.get(path));
+        if (size == RAW) {
+            return imageToArray(Paths.get(imagesFolder + File.separator + path), format);
+        } else {
+            return imageToArray(Paths.get(imagesFolder + File.separator + Paths.get(path).getParent() + File.separator + size + File.separator + Paths.get(path).getFileName()), format);
+        }
+    }
+
+    private byte[] imageToArray(Path path, String format) {
         try {
-            image = ImageIO.read(Paths.get(path).toFile());
-
-            MultiResolutionImage resoImages = new BaseMultiResolutionImage(image);
-            if(size == RAW){
-                return imageToArray(image, getFormat(Paths.get(path)));
-            }
-
-            int width = image.getWidth() / (image.getHeight() / size.getHeight());
-            image = (BufferedImage)resoImages.getResolutionVariant((double) width, (double) size.getHeight());
-
-            return imageToArray(image, getFormat(Paths.get(path)));
+            BufferedImage image = ImageIO.read(path.toFile());
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ImageIO.write(image, format, baos);
+            baos.flush();
+            return baos.toByteArray();
         } catch (IOException e) {
             log.error(e.getMessage(), e);
             throw new FileReadException(e);
         }
     }
 
-    private byte[] imageToArray(BufferedImage image, String format) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ImageIO.write(image , format, baos);
-        baos.flush();
-        return baos.toByteArray();
-    }
-
-    private Image pathToImage(Path imagePath) throws IOException {
-        if(!Files.exists(imagePath)){
-            throw new FileReadException("Can't determine image or thumbnail size, file does not exist!");
-        }
-        BufferedImage bufferedImage = ImageIO.read(imagePath.toFile());
-        Image image = new Image(imagePath.normalize().toString(), bufferedImage.getWidth(),bufferedImage.getHeight());
-        return image;
-    }
+//    private Image pathToImage(Path imagePath) throws IOException {
+//        if(!Files.exists(imagePath)){
+//            throw new FileReadException("Can't determine image or thumbnail size, file does not exist!");
+//        }
+//        BufferedImage bufferedImage = ImageIO.read(imagePath.toFile());
+//        Image image = new Image(imagePath.normalize().toString(), bufferedImage.getWidth(),bufferedImage.getHeight());
+//        return image;
+//    }
 
     private boolean isOneOfPreviewFolders(Path folder) throws IOException {
         for (Path previewFolder : previewFolders) {
-            if(folder.getFileName().equals(previewFolder)){
+            if (folder.getFileName().equals(previewFolder)) {
                 return true;
             }
         }
@@ -383,7 +396,6 @@ public class ImageService {
     private boolean createAllSizes(Path originalFile) {
         boolean atLeastOneThumbnailCreated = false;
         try {
-            BufferedImage originalImage = ImageIO.read(originalFile.toFile());
             String format = getFormat(originalFile);
 
             Path imageFolder = originalFile.getParent();
@@ -393,19 +405,51 @@ public class ImageService {
             }
 
             for (Size size : Size.values()) {
-                if(size == Size.RAW) continue;
-                if(!xxsEnabled && size == Size.XXS) continue;
-                if(!xsEnabled && size == Size.XS) continue;
-                if(!sEnabled && size == Size.S) continue;
-                if(!mEnabled && size == Size.M) continue;
-                if(!lEnabled && size == Size.L) continue;
-                if(!xlEnabled && size == Size.XL) continue;
+                if (size == Size.RAW) continue;
+                if (!xxsEnabled && size == Size.XXS) continue;
+                if (!xsEnabled && size == Size.XS) continue;
+                if (!sEnabled && size == Size.S) continue;
+                if (!mEnabled && size == Size.M) continue;
+                if (!lEnabled && size == Size.L) continue;
+                if (!xlEnabled && size == Size.XL) continue;
 
                 File resizedImageFile = new File(imageFolder + File.separator + size.name() + File.separator + originalFile.getFileName());
                 if (resizedImageFile.exists()) continue;
 
-                BufferedImage resizedImage =
-                        Scalr.resize(originalImage, Scalr.Method.ULTRA_QUALITY, Scalr.Mode.FIT_TO_HEIGHT, size.getHeight(), Scalr.OP_ANTIALIAS);
+                int orientation = 0;
+                Metadata metadata = ImageMetadataReader.readMetadata(originalFile.toFile());
+                ExifIFD0Directory exifIfInfo = metadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
+                if (exifIfInfo != null) {
+                    try {
+                        orientation = exifIfInfo.getInt(ExifDirectoryBase.TAG_ORIENTATION);
+                    } catch (MetadataException e) {
+                        log.error("Can't get orientation size", e);
+                    }
+                }
+
+                BufferedImage originalImage = ImageIO.read(originalFile.toFile());
+                BufferedImage resizedImage;
+                switch (orientation) {
+                    case 3:
+                        resizedImage =
+                                Scalr.resize(originalImage, Scalr.Method.ULTRA_QUALITY, Scalr.Mode.FIT_TO_HEIGHT, size.getHeight(), Scalr.OP_ANTIALIAS);
+                        resizedImage = Scalr.rotate(resizedImage, CW_180);
+                        break;
+                    case 6:
+                        resizedImage =
+                                Scalr.resize(originalImage, Scalr.Method.ULTRA_QUALITY, Scalr.Mode.FIT_TO_WIDTH, size.getHeight(), Scalr.OP_ANTIALIAS);
+                        resizedImage = Scalr.rotate(resizedImage, CW_90);
+                        break;
+                    case 8:
+                        resizedImage =
+                                Scalr.resize(originalImage, Scalr.Method.ULTRA_QUALITY, Scalr.Mode.FIT_TO_WIDTH, size.getHeight(), Scalr.OP_ANTIALIAS);
+                        resizedImage = Scalr.rotate(resizedImage, CW_270);
+                        break;
+                    default:
+                        resizedImage =
+                                Scalr.resize(originalImage, Scalr.Method.ULTRA_QUALITY, Scalr.Mode.FIT_TO_HEIGHT, size.getHeight(), Scalr.OP_ANTIALIAS);
+                        break;
+                }
                 ImageIO.write(resizedImage, format, resizedImageFile);
 
                 atLeastOneThumbnailCreated = true;
@@ -414,11 +458,72 @@ public class ImageService {
                         "width: " + resizedImage.getWidth() + ", height: " + size.height +
                         "original image: " + originalFile);
             }
-        } catch (IOException e) {
+        } catch (IOException | ImageProcessingException e) {
             log.error("Error resizing file: " + originalFile, e);
             return atLeastOneThumbnailCreated;
         }
         return atLeastOneThumbnailCreated;
+    }
+
+    public void addImageInfoToDb(Path originalFile) {
+        log.info("Saving image info to db");
+        originalFile = originalFile.toAbsolutePath().normalize();
+        if (photoRepository.findOneByPath(originalFile.toString()).isPresent()) {
+            log.debug("Information about image already saved to db");
+            return;
+        }
+        ExifData exifData = new ExifData();
+        Photo photo = new Photo();
+        photo.setExifData(exifData);
+        photo.setPath(originalFile.toString());
+        photo.setExtension(FilenameUtils.getExtension(originalFile.toString()));
+        photo.setName(FilenameUtils.getBaseName(originalFile.toString()));
+
+        try {
+            Metadata metadata = ImageMetadataReader.readMetadata(originalFile.toFile());
+            FileSystemDirectory fileInfo = metadata.getFirstDirectoryOfType(FileSystemDirectory.class);
+            if (fileInfo != null) {
+                try {
+                    photo.setSize(fileInfo.getLong(TAG_FILE_SIZE));
+                } catch (MetadataException e) {
+                    log.error("Can't get file size", e);
+                }
+            }
+            ExifIFD0Directory exifIfInfo = metadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
+            if (exifIfInfo != null) {
+                exifData.setCameraModel(exifIfInfo.getString(ExifDirectoryBase.TAG_MODEL, StandardCharsets.UTF_8.name()));
+                exifData.setRecordedDate(exifIfInfo.getDate(ExifDirectoryBase.TAG_DATETIME).getTime());
+                try {
+                    exifData.setOrientation(exifIfInfo.getInt(ExifDirectoryBase.TAG_ORIENTATION));
+                } catch (MetadataException e) {
+                    log.error("Can't get orientation size", e);
+                }
+            }
+            JpegDirectory jpgInfo = metadata.getFirstDirectoryOfType(JpegDirectory.class);
+            if (jpgInfo != null) {
+                try {
+                    if(exifData.getOrientation() == 6 || exifData.getOrientation() == 8){
+                        exifData.setHeight(jpgInfo.getImageWidth()); //width will be height after rotation
+                        exifData.setWidth(jpgInfo.getImageHeight());
+                    }else{
+                        exifData.setHeight(jpgInfo.getImageHeight());
+                        exifData.setWidth(jpgInfo.getImageWidth());
+                    }
+                } catch (MetadataException e) {
+                    log.error("Can't get pixel size", e);
+                }
+            }
+
+            BufferedImage originalImage = ImageIO.read(originalFile.toFile());
+            exifData.setDominantColor(ColorThief.getColorAsHash(originalImage));
+
+            photoService.createIfNotExist(photo);
+
+            log.debug("New entry has been added to db");
+        } catch (IOException | ImageProcessingException e) {
+            throw new RuntimeException("Could not read Image data", e);
+        }
+
     }
 
     private String getFormat(Path file) {
@@ -436,13 +541,6 @@ public class ImageService {
         return "";
     }
 
-    private Orientation getOrientation(int width, int height) {
-        if (width > height) {
-            return Orientation.LANDSCAPE;
-        } else {
-            return Orientation.PORTRAIT;
-        }
-    }
 
     public void scanFolderSync() throws InterruptedException {
         Thread thread = new Thread(new BackgroundResizer());
@@ -468,9 +566,11 @@ public class ImageService {
                 for (Path child : ds) {
                     if (isImage(child)) {
                         log.info("Creating resized copies for: " + child);
+
                         if (createAllSizes(child)) {
                             resizedImagesCount++;
                         }
+                        addImageInfoToDb(child);
                     } else if (Files.isDirectory(child) &&
                             //don't scan directories with thumbnails
                             !isOneOfPreviewFolders(child)) {
@@ -487,7 +587,7 @@ public class ImageService {
         }
     }
 
-    private boolean isImage(Path path){
+    private boolean isImage(Path path) {
         String extension = FilenameUtils.getExtension(path.getFileName().toString());
         return Files.isRegularFile(path) && imagesExtensions.contains(extension.toLowerCase());
     }
@@ -497,7 +597,7 @@ public class ImageService {
 
         private int height;
 
-        Size(int height){
+        Size(int height) {
             this.height = height;
         }
 
@@ -506,8 +606,5 @@ public class ImageService {
         }
     }
 
-    enum Orientation{
-        PORTRAIT, LANDSCAPE;
-    }
 }
 

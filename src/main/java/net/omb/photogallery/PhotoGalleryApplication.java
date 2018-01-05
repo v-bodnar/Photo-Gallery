@@ -1,18 +1,19 @@
 package net.omb.photogallery;
 
 import net.omb.photogallery.security.SpringSecurityAuditorAware;
-import org.apache.derby.drda.NetworkServerControl;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.data.domain.AuditorAware;
-
-import java.io.PrintWriter;
-import java.net.InetAddress;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 @SpringBootApplication(scanBasePackages = {"net.omb.photogallery"})
+@EnableAspectJAutoProxy(proxyTargetClass = true)
 public class PhotoGalleryApplication extends SpringBootServletInitializer {
 	@Override
 	protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
@@ -28,14 +29,24 @@ public class PhotoGalleryApplication extends SpringBootServletInitializer {
 		return new SpringSecurityAuditorAware();
 	}
 
-	private static void startDerbyNetworkServer(){
-		try {
-			NetworkServerControl server = new NetworkServerControl
-					(InetAddress.getByName("localhost"),1527);
-
-			server.start(new PrintWriter(System.out));
-		}catch (Exception e) {
-			throw new RuntimeException("Could not start derby network server" + e.getMessage());
-		}
+	@Bean
+	public WebMvcConfigurer corsConfigurer() {
+		return new WebMvcConfigurer() {
+			@Override
+			public void addCorsMappings(CorsRegistry registry) {
+				registry.addMapping("/**")
+						.allowedMethods("HEAD", "GET", "PUT", "POST", "DELETE", "PATCH");
+			}
+		};
 	}
+//	private static void startDerbyNetworkServer(){
+//		try {
+//			NetworkServerControl server = new NetworkServerControl
+//					(InetAddress.getByName("localhost"),1527);
+//
+//			server.start(new PrintWriter(System.out));
+//		}catch (Exception e) {
+//			throw new RuntimeException("Could not start derby network server" + e.getMessage());
+//		}
+//	}
 }

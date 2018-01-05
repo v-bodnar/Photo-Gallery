@@ -3,6 +3,7 @@ package net.omb.photogallery.services;
 import net.omb.photogallery.model.Photo;
 import net.omb.photogallery.repositories.PhotoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,6 +14,8 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,6 +28,9 @@ public class PhotoService {
 
     @Autowired
     private PhotoRepository photoRepository;
+
+    @Value("${root.gallery.dir}")
+    private String imagesFolder;
 
     @Transactional
     public List<Photo> createIfNotExist(List<Photo> photosList){
@@ -64,4 +70,32 @@ public class PhotoService {
         }
     }
 
+    @Transactional
+    public List<Photo> findByDirectory(final String path, boolean recursive){
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Photo> cq = cb.createQuery(Photo.class);
+
+        Root root = cq.from(Photo.class);
+        Predicate pathPredicate = cb.and(cb.like(root.get("path"), "%" + path.replace("\\","\\\\") + "%"));
+
+        cq.select(root).where(pathPredicate);
+
+        List<Photo> result = entityManager.createQuery(cq).getResultList();
+
+        if(recursive){
+            return result;
+        }else {
+            //We do not want images from inner directories
+            java.util.function.Predicate<Photo> pathFilter = new java.util.function.Predicate<Photo>() {
+                @Override
+                public boolean test(Photo photo) {
+                    Path relative = Paths.get(imagesFolder).relativize(Paths.get(photo.getPath()));
+                    relative = Paths.get(path).relativize(relative);
+                    return relative.getNameCount() == 1;
+                }
+            };
+
+            return result.stream().filter(pathFilter).collect(Collectors.toList());
+        }
+    }
 }

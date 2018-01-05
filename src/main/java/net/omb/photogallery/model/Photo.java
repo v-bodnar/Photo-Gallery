@@ -16,8 +16,7 @@ public class Photo extends GenericEntity<Photo> implements Comparable<Photo> {
     private Long size;
     @Column(length = 4000)
     private String description;
-
-    @OneToOne(optional=false, mappedBy = "photo", cascade = CascadeType.ALL)
+    @OneToOne(optional=false, cascade = CascadeType.ALL)
     private ExifData exifData;
 
     @ManyToMany(mappedBy = "photos")

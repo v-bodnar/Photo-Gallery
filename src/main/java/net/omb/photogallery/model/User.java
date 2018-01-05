@@ -15,7 +15,7 @@ import java.util.Set;
 /**
  * Created by volodymyr.bodnar on 6/19/2017.
  */
-@Entity(name = "users")
+@Entity(name = "userz")
 public class User extends GenericEntity<User> implements org.springframework.security.core.userdetails.UserDetails, CredentialsContainer {
     private static final long serialVersionUID = -8573472150562508317L;
 

@@ -4,6 +4,7 @@ import net.omb.photogallery.model.ExifData;
 import net.omb.photogallery.model.Photo;
 import net.omb.photogallery.model.Tag;
 import net.omb.photogallery.repositories.ExifDataRepository;
+import net.omb.photogallery.repositories.PhotoRepository;
 import net.omb.photogallery.services.PhotoService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,15 +28,13 @@ public class PhotoServiceTest {
     private PhotoService photoService;
 
     @Autowired
-    private ExifDataRepository exifDataRepository;
+    private PhotoRepository photoRepository;
 
     @Test
-    //@Rollback(value = false)
-    public void createIfNotExist() throws InterruptedException {
+    public void createIfNotExist() {
         ExifData exifData = new ExifData();
         exifData.setHeight(637);
         exifData.setWidth(960);
-        //exifDataRepository.save(exifData);
 
         List<Tag> tags = Arrays.asList(new Tag("nature"), new Tag("insect"), new Tag("macro"));
 
@@ -50,7 +49,7 @@ public class PhotoServiceTest {
     }
 
     @Test
-    public void createIfNotExistList() throws InterruptedException {
+    public void createIfNotExistList() {
         ExifData exifData = new ExifData();
         exifData.setHeight(637);
         exifData.setWidth(960);
@@ -77,6 +76,19 @@ public class PhotoServiceTest {
         photo2.setExifData(exifData2);
         photo2.setTags(tags2);
         List<Photo> result = photoService.createIfNotExist(Arrays.asList(photo, photo2));
+        assertNotNull(result);
+    }
+
+
+    @Test
+    public void findByPath() {
+        List<Photo> result = photoService.findByDirectory("2017.06.26 Lublin\\", false);
+        assertNotNull(result);
+
+        result = photoService.findByDirectory("2017.06.26 Lublin\\inner", false);
+        assertNotNull(result);
+
+        result = photoService.findByDirectory("2017.06.26 Lublin", true);
         assertNotNull(result);
     }
 }

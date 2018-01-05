@@ -23,34 +23,36 @@ public class Preview {
     @JsonIgnore
     private static final String HOST = (String) PropertiesUtil.getProperty("root.context.path");
     @JsonIgnore
-    private static final String IMG_DOWNLOAD_SERVICE = (String) PropertiesUtil.getProperty("root.context.path");
+    private static final String IMG_DOWNLOAD_SERVICE = "api/getImage";
     @JsonIgnore
-    private static final boolean xxsEnabled = (Boolean) PropertiesUtil.getProperty("size.xxs.enabled");
+    private static final boolean xxsEnabled = Boolean.parseBoolean((String)PropertiesUtil.getProperty("size.xxs.enabled"));
     @JsonIgnore
-    private static final boolean xsEnabled = (Boolean) PropertiesUtil.getProperty("size.xs.enabled");
+    private static final boolean xsEnabled = Boolean.parseBoolean((String) PropertiesUtil.getProperty("size.xs.enabled"));
     @JsonIgnore
-    private static final boolean sEnabled = (Boolean) PropertiesUtil.getProperty("size.s.enabled");
+    private static final boolean sEnabled = Boolean.parseBoolean((String) PropertiesUtil.getProperty("size.s.enabled"));
     @JsonIgnore
-    private static final boolean mEnabled = (Boolean) PropertiesUtil.getProperty("size.m.enabled");
+    private static final boolean mEnabled = Boolean.parseBoolean((String) PropertiesUtil.getProperty("size.m.enabled"));
     @JsonIgnore
-    private static final boolean lEnabled = (Boolean) PropertiesUtil.getProperty("size.l.enabled");
+    private static final boolean lEnabled = Boolean.parseBoolean((String) PropertiesUtil.getProperty("size.l.enabled"));
     @JsonIgnore
-    private static final boolean xlEnabled = (Boolean) PropertiesUtil.getProperty("size.xl.enabled");
+    private static final boolean xlEnabled = Boolean.parseBoolean((String) PropertiesUtil.getProperty("size.xl.enabled"));
 
-    @JsonProperty("prewiew_xxs")
+    @JsonProperty("preview_xxs")
     private Image previewXXS;
-    @JsonProperty("prewiew_xs")
+    @JsonProperty("preview_xs")
     private Image previewXS;
-    @JsonProperty("prewiew_s")
+    @JsonProperty("preview_s")
     private Image previewS;
-    @JsonProperty("prewiew_m")
+    @JsonProperty("preview_m")
     private Image previewM;
-    @JsonProperty("prewiew_l")
+    @JsonProperty("preview_l")
     private Image previewL;
-    @JsonProperty("prewiew_xl")
+    @JsonProperty("preview_xl")
     private Image previewXL;
     private Image raw;
     private String dominantColor;
+    private int orientation;
+
 
     public Preview() {
     }
@@ -58,6 +60,8 @@ public class Preview {
     public Preview(Photo photo) {
         int width = photo.getExifData().getWidth();
         int height = photo.getExifData().getHeight();
+        this.orientation =  photo.getExifData().getOrientation();
+
         this.setRaw(new Image(formDownloadUrl(photo.getPath(), RAW), width, height));
         this.setPreviewXXS(new Image(formDownloadUrl(photo.getPath(), XXS), calculateWidth(width, height, XXS.getHeight()), XXS.getHeight()));
         this.setPreviewXS(new Image(formDownloadUrl(photo.getPath(), XS), calculateWidth(width, height, XS.getHeight()), XS.getHeight()));
@@ -156,5 +160,13 @@ public class Preview {
 
     public void setDominantColor(String dominantColor) {
         this.dominantColor = dominantColor;
+    }
+
+    public int getOrientation() {
+        return orientation;
+    }
+
+    public void setOrientation(int orientation) {
+        this.orientation = orientation;
     }
 }

@@ -8,12 +8,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
 /**
  * Created by volodymyr.bodnar on 6/23/2017.
  */
+@Component
 public class SpringSecurityAuditorAware implements AuditorAware<String> {
     private static Logger log = LoggerFactory.getLogger(SpringSecurityAuditorAware.class);
 
@@ -27,13 +29,7 @@ public class SpringSecurityAuditorAware implements AuditorAware<String> {
         if (authentication == null || !authentication.isAuthenticated()) {
             //todo
             log.error("No authenticated user!");
-            return null;
-        }
-        if(authentication.getPrincipal() instanceof User) {
-            User user = (User) authentication.getPrincipal();
-            if ("bodik@list.ru".equals(user.getEmail()) && user.getId() == 0) {
-                return Optional.of(user.getUsername());
-            }
+            return Optional.of("anonymous");
         }
         User user = usersRepository.findOneByEmail(((org.springframework.security.core.userdetails.User)authentication.getPrincipal()).getUsername()).get();
         return Optional.of(user.getUsername());

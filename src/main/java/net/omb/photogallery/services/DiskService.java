@@ -1,12 +1,12 @@
 package net.omb.photogallery.services;
 
-import net.omb.photogallery.exceptions.FileReadException;
-import org.apache.commons.io.FileUtils;
+import net.omb.photogallery.model.json.Folder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -20,41 +20,49 @@ import java.nio.file.Paths;
 public class DiskService {
 
     private static Logger log = LoggerFactory.getLogger(DiskService.class);
-    private static final String jsonFileName = "data.json";
+    private Folder allFolders;
 
-    @Value("root.gallery.dir")
+    @Value("${root.gallery.dir}")
     private String rootDirectory;
 
-    public String getGalleryJson(String directory){
-        Path path = Paths.get(rootDirectory + directory);
-        if(!Files.exists(path)){
-            throw new FileReadException("Directory does not exist");
-        }
-        if(!Files.isDirectory(path)){
-            throw new FileReadException("Given path is not a gallery directory");
-        }
-        path = Paths.get(path.normalize().toAbsolutePath().toString(), jsonFileName);
-        if(!Files.isReadable(path)){
-            throw new FileReadException("Can't access json, it is not readable");
+
+    public Folder getFolders(String folder) {
+        if (allFolders == null) {
+            allFolders = new Folder();
+            allFolders.setName(File.separator);
+            allFolders.setPath(File.separator);
         }
 
-        try {
-            return FileUtils.readFileToString(path.toFile(), "UTF-8");
+        Folder newFolder;
+        Path path;
+        if (folder == null) {
+            path = Paths.get(rootDirectory);
+            newFolder = allFolders;
+        } else {
+            path = Paths.get(folder);
+            newFolder = new Folder();
+            newFolder.setName(path.getFileName().toString());
+            newFolder.setPath(Paths.get(rootDirectory).relativize(path).toString());
+        }
+
+        try (DirectoryStream<Path> ds = Files.newDirectoryStream(path)) {
+            for (Path pathChild : ds) {
+                if (Files.isDirectory(pathChild)) {
+                    if (pathChild.getFileName().toString().equals(ImageService.Size.XXS.name())) continue;
+                    if (pathChild.getFileName().toString().equals(ImageService.Size.XS.name())) continue;
+                    if (pathChild.getFileName().toString().equals(ImageService.Size.S.name())) continue;
+                    if (pathChild.getFileName().toString().equals(ImageService.Size.M.name())) continue;
+                    if (pathChild.getFileName().toString().equals(ImageService.Size.L.name())) continue;
+                    if (pathChild.getFileName().toString().equals(ImageService.Size.XL.name())) continue;
+                    Folder child = getFolders(pathChild.toString());
+                    newFolder.addChild(child);
+                }
+            }
         } catch (IOException e) {
-            throw new FileReadException(e.getMessage(), e);
+            log.error(e.getMessage(), e);
         }
-    }
 
-    public Path getImage(String imagePath){
-        Path path = Paths.get(rootDirectory + imagePath);
-        if(!Files.exists(path)){
-            throw new FileReadException("Image does not exist");
-        }
-        if(!Files.isReadable(path)){
-            throw new FileReadException("Can't access image, it is not readable");
-        }
-        return path;
+        return newFolder;
     }
-
 
 }

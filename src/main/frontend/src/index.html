@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Frontend</title>
+  <base href="/">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+
+</head>
+<body>
+  <app-root></app-root>
+</body>
+<script language="JavaScript">
+  <!-- Menu Toggle Script -->
+  $("#menu-toggle").click(function(e) {
+    e.preventDefault();
+    $("#wrapper").toggleClass("toggled");
+    if($("#menu-toggle span").hasClass("glyphicon-triangle-left")){
+      $("#menu-toggle span").removeClass("glyphicon-triangle-left");
+      $("#menu-toggle span").addClass("glyphicon-triangle-right");
+    }else{
+      $("#menu-toggle span").removeClass("glyphicon-triangle-right");
+      $("#menu-toggle span").addClass("glyphicon-triangle-left");
+    }
+  });
+</script>
+</html>

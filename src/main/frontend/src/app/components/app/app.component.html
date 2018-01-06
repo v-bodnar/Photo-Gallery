@@ -28,7 +28,6 @@
 
   <div id="wrapper">
 
-
     <!-- Sidebar -->
     <div id="sidebar-wrapper">
       <ul class="sidebar-nav">
@@ -37,17 +36,11 @@
             Folders
           </a>
         </li>
-        <li>
-          <a href="#">2017.01.02 Путешествие 1</a>
-        </li>
-        <li>
-          <a href="#">2017.03.02 Путешествие 2</a>
-        </li>
+        <folders [folder]="rootFolder"></folders>
       </ul>
-    </div>
+    </div><!-- /#sidebar-wrapper -->
     <a href="#menu-toggle" class="btn btn-secondary" id="menu-toggle"><span
       class="glyphicon glyphicon-triangle-right"></span></a>
-    <div><!-- /#sidebar-wrapper -->
 
       <!-- Begin page content -->
       <img class="container-fluid">
@@ -61,6 +54,6 @@
         [flexBorderSize]="flexBorderSize"
         [flexImageSize]="flexImageSize"
         [galleryName]="galleryName"></gallery>
-    </div>
+
 </div><!-- /#wrap -->
 </div>

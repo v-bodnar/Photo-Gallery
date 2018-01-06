@@ -8,12 +8,10 @@ import com.drew.metadata.exif.ExifDirectoryBase;
 import com.drew.metadata.exif.ExifIFD0Directory;
 import com.drew.metadata.file.FileSystemDirectory;
 import com.drew.metadata.jpeg.JpegDirectory;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import net.omb.photogallery.annotations.LogExecutionTime;
 import net.omb.photogallery.exceptions.FileReadException;
 import net.omb.photogallery.model.ExifData;
 import net.omb.photogallery.model.Photo;
-import net.omb.photogallery.model.json.Image;
 import net.omb.photogallery.repositories.PhotoRepository;
 import net.omb.photogallery.utils.colorthief.ColorThief;
 import org.apache.commons.io.FilenameUtils;
@@ -41,9 +39,7 @@ import java.util.List;
 
 import static com.drew.metadata.file.FileSystemDirectory.TAG_FILE_SIZE;
 import static net.omb.photogallery.services.ImageService.Size.*;
-import static org.imgscalr.Scalr.Rotation.CW_180;
-import static org.imgscalr.Scalr.Rotation.CW_270;
-import static org.imgscalr.Scalr.Rotation.CW_90;
+import static org.imgscalr.Scalr.Rotation.*;
 
 /**
  * Created by volodymyr.bodnar on 9/17/2017.
@@ -53,10 +49,7 @@ import static org.imgscalr.Scalr.Rotation.CW_90;
 @LogExecutionTime
 public class ImageService {
     protected static final Logger log = LoggerFactory.getLogger(ImageService.class);
-    private static final String jsonFileName = "data.json";
-    private static final ObjectMapper jacksonMapper = new ObjectMapper();
     private static final List<String> imagesExtensions = new ArrayList<>();
-    private static final String GET_IMAGE_SERVICE = "api/getImage";
 
     static {
         imagesExtensions.add("jpg");
@@ -95,24 +88,6 @@ public class ImageService {
 
     @Autowired
     private PhotoRepository photoRepository;
-//
-//    @Value("${size.xxs.height}")
-//    private int heightXXS;
-//
-//    @Value("${size.xs.height}")
-//    private int heightXS;
-//
-//    @Value("${size.s.height}")
-//    private int heightS;
-//
-//    @Value("${size.m.height}")
-//    private int heightM;
-//
-//    @Value("${size.l.height}")
-//    private int heightL;
-//
-//    @Value("${size.xl.height}")
-//    private int heightXL;
 
     private java.util.List<Path> previewFolders = new LinkedList<>();
 
@@ -136,13 +111,7 @@ public class ImageService {
         previewFolders.add(Paths.get(M.name()));
         previewFolders.add(Paths.get(Size.L.name()));
         previewFolders.add(Paths.get(Size.XL.name()));
-
-        // generateGalleryJson(imagesRootFolder);
         createPreviewFoldersStructure(imagesRootFolder);
-
-        //jacksonMapper.setVisibility(JsonMethod.FIELD, JsonAutoDetect.Visibility.ANY);
-        //jacksonMapper.configure(SerializationConfig.Feature.FAIL_ON_EMPTY_BEANS, false);
-
     }
 
     private void createPreviewFoldersStructure(Path folder) {
@@ -176,112 +145,6 @@ public class ImageService {
         }
     }
 
-//    public void generateGalleryJson(Path directory){
-//        if(!Files.exists(directory)){
-//            throw new FileReadException("Directory does not exist");
-//        }
-//        if(!Files.isDirectory(directory)){
-//            throw new FileReadException("Given path is not a gallery directory");
-//        }
-//
-//
-//        log.info("Generating json gallery file");
-//        List<Preview> entityListForJson = new LinkedList<>();
-//        try (DirectoryStream<Path> ds = Files.newDirectoryStream(directory)) {
-//            for (Path child : ds) {
-//                if (isImage(child)){
-//                    Preview entityForJson = new Preview();
-//                    BufferedImage originalImage = ImageIO.read(child.toFile());
-//                    entityForJson.setRaw(pathToImage(child));
-//                    entityForJson.setPreviewXXS(pathToImage(Paths.get(directory + File.separator + XXS + File.separator + child.getFileName())));
-//                    entityForJson.setPreviewXS(pathToImage(Paths.get(directory + File.separator + XS + File.separator + child.getFileName())));
-//                    entityForJson.setPreviewS(pathToImage(Paths.get(directory + File.separator + S + File.separator + child.getFileName())));
-//                    entityForJson.setPreviewM(pathToImage(Paths.get(directory + File.separator + M + File.separator + child.getFileName())));
-//                    entityForJson.setPreviewL(pathToImage(Paths.get(directory + File.separator + Size.L + File.separator + child.getFileName())));
-//                    entityForJson.setPreviewXL(pathToImage(Paths.get(directory + File.separator + Size.XL + File.separator + child.getFileName())));
-//                    entityForJson.setDominantColor(ColorThief.getColorAsHash(originalImage));
-//                    entityListForJson.add(entityForJson);
-//                }
-//            }
-//
-//            Path jsonGalleryFile = Paths.get(directory + File.separator + jsonFileName);
-//            if(!Files.exists(jsonGalleryFile)){
-//                log.info("Creating gallery file: " + jsonGalleryFile);
-//            }
-//            String json = jacksonMapper.writeValueAsString(entityListForJson);
-//            FileUtils.writeStringToFile(jsonGalleryFile.toFile(), json, StandardCharsets.UTF_8);
-//
-//        } catch (IOException e) {
-//            log.error(e.getMessage());
-//        }
-//    }
-
-//    public void generateGalleryJson(Path directory){
-//        if(!Files.exists(directory)){
-//            throw new FileReadException("Directory does not exist");
-//        }
-//        if(!Files.isDirectory(directory)){
-//            throw new FileReadException("Given path is not a gallery directory");
-//        }
-//
-//        log.info("Generating json gallery file");
-//        List<Preview> entityListForJson = new LinkedList<>();
-//
-//        Path galleryFolder = Paths.get(imagesFolder);
-//        try (DirectoryStream<Path> ds = Files.newDirectoryStream(directory)) {
-//            for (Path child : ds) {
-//                if (isImage(child)){
-//                    Preview entityForJson = new Preview();
-//                    String url = new String(Base64.encodeBase64(galleryFolder.relativize(child).toString().getBytes(StandardCharsets.UTF_8)));
-//                    BufferedImage originalImage = ImageIO.read(child.toFile());
-//                    entityForJson.setRaw(new Image(rootPath + GET_IMAGE_SERVICE + "/" + RAW.name() + url, getImageWidth(child, XXS), XXS.height)); //todo
-//                    entityForJson.setPreviewXXS(new Image(rootPath + GET_IMAGE_SERVICE + "/" + XXS.name() + "/" + url, getImageWidth(child, XXS), XXS.height));
-//                    entityForJson.setPreviewXS(new Image(rootPath + GET_IMAGE_SERVICE + "/" + XS.name() + "/" + url, getImageWidth(child, XS), XS.height));
-//                    entityForJson.setPreviewS(new Image(rootPath + GET_IMAGE_SERVICE + "/" + S.name() + "/" + url, getImageWidth(child, S), S.height));
-//                    entityForJson.setPreviewM(new Image(rootPath + GET_IMAGE_SERVICE + "/" + M.name() + "/" + url, getImageWidth(child, M), M.height));
-//                    entityForJson.setPreviewL(new Image(rootPath + GET_IMAGE_SERVICE + "/" + L.name() + "/" + url, getImageWidth(child, L), L.height));
-//                    entityForJson.setPreviewXL(new Image(rootPath + GET_IMAGE_SERVICE + "/" + XL.name() + "/" + url, getImageWidth(child, XL), XL.height));
-//                    entityForJson.setDominantColor(ColorThief.getColorAsHash(originalImage));
-//                    entityListForJson.add(entityForJson);
-//                }else if(Files.isDirectory(child)){
-//                    generateGalleryJson(child);
-//                }
-//            }
-//
-//            Path jsonGalleryFile = Paths.get(directory + File.separator + jsonFileName);
-//            if(!Files.exists(jsonGalleryFile)){
-//                log.info("Creating gallery file: " + jsonGalleryFile);
-//            }
-//            String json = jacksonMapper.writeValueAsString(entityListForJson);
-//            FileUtils.writeStringToFile(jsonGalleryFile.toFile(), json, StandardCharsets.UTF_8);
-//
-//        } catch (IOException e) {
-//            log.error(e.getMessage());
-//        }
-//
-//    }
-//
-//    private int getImageWidth(Path path, Size size){
-//        try {
-//            final Iterator<ImageReader> readers = ImageIO.getImageReaders(path.toFile());
-//            Double width = 0d;
-//            if (readers.hasNext()) {
-//                ImageReader reader = readers.next();
-//                try {
-//                    reader.setInput(path.toFile());
-//                    width = (reader.getWidth(0) / ((double)reader.getHeight(0) / (double)size.getHeight()));
-//                } finally {
-//                    reader.dispose();
-//                }
-//            }
-//
-//            return width.intValue();
-//        } catch (IOException e) {
-//            log.error(e.getMessage(), e);
-//            throw new FileReadException(e);
-//        }
-//    }
-
     public byte[] getImage(String path, Size size) {
         String format = getFormat(Paths.get(path));
         if (size == RAW) {
@@ -304,15 +167,6 @@ public class ImageService {
         }
     }
 
-//    private Image pathToImage(Path imagePath) throws IOException {
-//        if(!Files.exists(imagePath)){
-//            throw new FileReadException("Can't determine image or thumbnail size, file does not exist!");
-//        }
-//        BufferedImage bufferedImage = ImageIO.read(imagePath.toFile());
-//        Image image = new Image(imagePath.normalize().toString(), bufferedImage.getWidth(),bufferedImage.getHeight());
-//        return image;
-//    }
-
     private boolean isOneOfPreviewFolders(Path folder) throws IOException {
         for (Path previewFolder : previewFolders) {
             if (folder.getFileName().equals(previewFolder)) {
@@ -321,77 +175,6 @@ public class ImageService {
         }
         return false;
     }
-
-//    public byte[] getImage(String fileName, int width, int height) {
-//
-//        Path originalFile = Paths.get(imagesFolder + File.separator + fileName);
-//        if (!Files.exists(originalFile)) {
-//            return null;
-//        }
-//
-//        Size size = determineSize(width, height);
-//        if (size == Size.ORIGINAL) {
-//            try {
-//                if (log.isDebugEnabled())
-//                    log.debug("Width or Height parameter from request are 0 returning original image");
-//                return Files.readAllBytes(originalFile);
-//            } catch (IOException e) {
-//                log.error("Error reading file: " + originalFile, e);
-//                return null;
-//            }
-//        }
-//
-//        Path resizedImage = Paths.get(imagesFolder + File.separator + size.name() + File.separator + fileName);
-//
-//        if (Files.exists(resizedImage)) {
-//            try {
-//                if (log.isDebugEnabled()) log.debug("Returning image: " + resizedImage);
-//                return Files.readAllBytes(resizedImage);
-//            } catch (IOException e) {
-//                log.error("Error reading file: " + resizedImage, e);
-//                return null;
-//            }
-//        } else {
-//            if (log.isDebugEnabled()) log.debug("Resized image does not exist, trying to create and return");
-//            return createResized(originalFile, size, getOrientation(width, height));
-//        }
-//    }
-
-
-//    public byte[] getImage(String fileName, Size size) {
-//
-//        Path originalFile = Paths.get(imagesFolder + File.separator + fileName);
-//        if (!Files.exists(originalFile)) {
-//            return null;
-//        }
-//
-//        Size size = determineSize(width, height);
-//        if (size == Size.ORIGINAL) {
-//            try {
-//                if (log.isDebugEnabled())
-//                    log.debug("Width or Height parameter from request are 0 returning original image");
-//                return Files.readAllBytes(originalFile);
-//            } catch (IOException e) {
-//                log.error("Error reading file: " + originalFile, e);
-//                return null;
-//            }
-//        }
-//
-//        Path resizedImage = Paths.get(imagesFolder + File.separator + size.name() + File.separator + fileName);
-//
-//        if (Files.exists(resizedImage)) {
-//            try {
-//                if (log.isDebugEnabled()) log.debug("Returning image: " + resizedImage);
-//                return Files.readAllBytes(resizedImage);
-//            } catch (IOException e) {
-//                log.error("Error reading file: " + resizedImage, e);
-//                return null;
-//            }
-//        } else {
-//            if (log.isDebugEnabled()) log.debug("Resized image does not exist, trying to create and return");
-//            return createResized(originalFile, size, getOrientation(width, height));
-//        }
-//    }
 
     private boolean createAllSizes(Path originalFile) {
         boolean atLeastOneThumbnailCreated = false;
@@ -502,10 +285,10 @@ public class ImageService {
             JpegDirectory jpgInfo = metadata.getFirstDirectoryOfType(JpegDirectory.class);
             if (jpgInfo != null) {
                 try {
-                    if(exifData.getOrientation() == 6 || exifData.getOrientation() == 8){
+                    if (exifData.getOrientation() == 6 || exifData.getOrientation() == 8) {
                         exifData.setHeight(jpgInfo.getImageWidth()); //width will be height after rotation
                         exifData.setWidth(jpgInfo.getImageHeight());
-                    }else{
+                    } else {
                         exifData.setHeight(jpgInfo.getImageHeight());
                         exifData.setWidth(jpgInfo.getImageWidth());
                     }
@@ -580,8 +363,6 @@ public class ImageService {
             } catch (IOException e) {
                 log.error(e.getMessage(), e);
             }
-
-            //generateGalleryJson(scanningFolder);
             log.info("Resized " + resizedImagesCount + " images");
             return resizedImagesCount;
         }

@@ -20,24 +20,19 @@ import java.nio.file.Paths;
 public class DiskService {
 
     private static Logger log = LoggerFactory.getLogger(DiskService.class);
-    private Folder allFolders;
 
     @Value("${root.gallery.dir}")
     private String rootDirectory;
 
 
     public Folder getFolders(String folder) {
-        if (allFolders == null) {
-            allFolders = new Folder();
-            allFolders.setName(File.separator);
-            allFolders.setPath(File.separator);
-        }
-
         Folder newFolder;
         Path path;
         if (folder == null) {
             path = Paths.get(rootDirectory);
-            newFolder = allFolders;
+            newFolder = new Folder();
+            newFolder.setName(File.separator);
+            newFolder.setPath(File.separator);
         } else {
             path = Paths.get(folder);
             newFolder = new Folder();

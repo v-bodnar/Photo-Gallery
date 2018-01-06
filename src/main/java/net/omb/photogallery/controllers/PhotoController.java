@@ -55,14 +55,6 @@ public class PhotoController {
 //        }
 //    }
 
-//    @RequestMapping(value = {"/testService", "/testService/"}, method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-//    public ResponseEntity<String> testService (HttpServletRequest request, @RequestParam Boolean throwException) throws Exception {
-//        if(throwException){
-//            throw new Exception("Alert! Exception");
-//        }else {
-//            return ResponseEntity.ok("Successfully authorized, no exceptions were thrown");
-//        }
-//    }
     @RequestMapping(value = {"/getGalleryByDirectory/{directory}","/getGalleryByDirectory/{directory}/" }, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> getGalleryByDirectory (@PathVariable("directory") String directory) throws Exception {
         List<Photo> photos = photoService.findByDirectory(new String(Base64.getDecoder().decode(directory.getBytes(StandardCharsets.UTF_8))), false);
@@ -85,7 +77,7 @@ public class PhotoController {
                 .body(new InputStreamResource(new ByteArrayInputStream(imageService.getImage(new String(Base64.getDecoder().decode(path)), size))));
     }
 
-    @RequestMapping(value = {"/getFolders/"}, method = RequestMethod.GET)
+    @RequestMapping(value = {"/getFolders/", "/getFolders"}, method = RequestMethod.GET)
     public ResponseEntity<Folder> getFolders () throws Exception {
         return ResponseEntity.ok(diskService.getFolders(null));
     }

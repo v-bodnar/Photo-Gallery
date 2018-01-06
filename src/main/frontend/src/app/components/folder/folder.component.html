@@ -1,0 +1,7 @@
+<div *ngIf="folder && folder.name != '\\'">{{folder.name}}</div>
+<ul *ngIf="folder" >
+  <li *ngFor="let child of folder.children">
+    <folders [folder]="child" (click)="selectedFolder = child" ></folders>
+  </li>
+</ul>
+

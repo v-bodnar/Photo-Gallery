@@ -1,59 +1,30 @@
-<!-- Wrap all page content here -->
-<div id="wrap">
-  <!-- Fixed navbar -->
-  <nav class="navbar navbar-toggleable-md navbar-light bg-faded">
-    <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <a class="navbar-brand" href="#">Navbar</a>
+<div id="header">
+  <p-menubar [model]="menuItems">
+    <p-calendar [(ngModel)]="dateFrom" dateFormat="dd.mm.yy" placeholder="Date From"></p-calendar>
+    <p-calendar [(ngModel)]="dateTo" dateFormat="dd.mm.yy" placeholder="Date To"></p-calendar>
+    <p-autoComplete [(ngModel)]="tags" [suggestions]="suggestedTags" (completeMethod)="tagSearch($event)" [multiple]="true" placeholder="Tags"></p-autoComplete>
 
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-      <ul class="navbar-nav mr-auto">
-        <li class="nav-item active">
-          <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">Link</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link disabled" href="#">Disabled</a>
-        </li>
-      </ul>
-      <form class="form-inline my-2 my-lg-0">
-        <input class="form-control mr-sm-2" type="text" placeholder="Search">
-        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-      </form>
+  </p-menubar>
+</div>
+<div class="wrapper h-100">
+  <!-- Sidebar -->
+  <div id="sidebar">
+    <p-tree [value]="folders" selectionMode="single" [(selection)]="selectedFolder"
+            (onNodeSelect)="onGallerySelect()"></p-tree>
+  </div><!-- /#sidebar -->
+
+  <button type="button" id="expand-menu-button" class="btn btn-secondary" (click)="changeView()">
+    <span id="expand-menu-button-icon" class="fa fa-chevron-left"></span>
+  </button>
+
+  <!-- Begin page content -->
+  <div id="page-content">
+    <div class="container-fluid">
+      <gallery *ngIf="selectedFolder !== null && selectedFolder !== undefined && (selectedFolder.path !== '\\' || tags !== undefined)"
+               [metadataUri]="'http://localhost:8080/api/getGalleryByDirectory/' + directory + '/' + tags"
+               [galleryName]="galleryName">
+      </gallery>
     </div>
-  </nav>
+  </div>
 
-  <div id="wrapper">
-
-    <!-- Sidebar -->
-    <div id="sidebar-wrapper">
-      <ul class="sidebar-nav">
-        <li class="sidebar-brand">
-          <a href="#">
-            Folders
-          </a>
-        </li>
-        <folders [folder]="rootFolder"></folders>
-      </ul>
-    </div><!-- /#sidebar-wrapper -->
-    <a href="#menu-toggle" class="btn btn-secondary" id="menu-toggle"><span
-      class="glyphicon glyphicon-triangle-right"></span></a>
-
-      <!-- Begin page content -->
-      <img class="container-fluid">
-      <div class="page-header">
-        <h1>Search query or folder name</h1>
-      </div>
-
-      photogallery
-      <gallery [metadataUri]="'http://localhost:8080/api/getGalleryByDirectory/' + directory">
-        (viewerChange)="onViewerVisibilityChanged($event)"
-        [flexBorderSize]="flexBorderSize"
-        [flexImageSize]="flexImageSize"
-        [galleryName]="galleryName"></gallery>
-
-</div><!-- /#wrap -->
 </div>

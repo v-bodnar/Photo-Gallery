@@ -20,12 +20,7 @@ export class FolderService {
   }
 
   getRootFolder (): Observable<Folder> {
-    return this.http.get<Folder>(this.foldersURL)
-      .pipe(
-        tap(heroes => console.log("Fetched Folders")),
-        catchError(this.handleError('getFolders', null))
-      );
-
+    return this.http.get<Folder>(this.foldersURL);
   }
 
   /**

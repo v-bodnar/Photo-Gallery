@@ -69,6 +69,20 @@ public class PhotoController {
         }
     }
 
+    @RequestMapping(value = {"/getGalleryByDirectory/{directory}/{tags}","/getGalleryByDirectory/{directory}/{tags}/" }, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> getGalleryByDirectoryAndTags (@PathVariable("directory") String directory, @PathVariable("tags") List<String> tags) throws Exception {
+        List<Photo> photos = photoService.findByDirectory(new String(Base64.getDecoder().decode(directory.getBytes(StandardCharsets.UTF_8))), false);
+        if(photos == null || photos.isEmpty()){
+            return ResponseEntity
+                    .status(HttpStatus.NO_CONTENT)
+                    .body("There is no images in folder: " + directory + " or they are not indexed");
+        }else {
+            List<Preview> photoListForJson = photos.stream().map(photo -> new Preview(photo)).collect(Collectors.toList());
+            String json = jacksonMapper.writeValueAsString(photoListForJson);
+            return ResponseEntity.ok(json);
+        }
+    }
+
     @RequestMapping(value = {"/getImage/{size}/{path}"}, method = RequestMethod.GET)
     public ResponseEntity<InputStreamResource> getImage (@PathVariable("size") ImageService.Size size, @PathVariable("path") String path) throws Exception {
         return ResponseEntity.ok()

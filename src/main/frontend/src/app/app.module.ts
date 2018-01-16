@@ -1,28 +1,32 @@
-import { BrowserModule } from '@angular/platform-browser';
-import { NgModule } from '@angular/core';
+import {BrowserModule} from '@angular/platform-browser';
+import {NgModule} from '@angular/core';
 
 
-import { AppComponent } from './components/app/app.component';
+import {AppComponent} from './components/app/app.component';
 import {FolderComponent} from './components/folder/folder.component';
 import {Angular2ImageGalleryModule} from "angular2-image-gallery/src/app";
 import {FolderService} from "./services/folder.service";
 import {HttpClientModule} from "@angular/common/http";
-import { FolderTreeComponent } from './components/folder-tree/folder-tree.component';
-
-
+import {AutoCompleteModule, CalendarModule, MenubarModule, TreeModule} from "primeng/primeng";
+import {FormsModule} from "@angular/forms";
 
 @NgModule({
   declarations: [
     AppComponent,
-    FolderComponent,
-    FolderTreeComponent
+    FolderComponent
   ],
   imports: [
     BrowserModule,
     Angular2ImageGalleryModule,
-    HttpClientModule
+    HttpClientModule,
+    TreeModule,
+    MenubarModule,
+    CalendarModule,
+    FormsModule,
+    AutoCompleteModule
   ],
   providers: [FolderService],
   bootstrap: [AppComponent]
 })
-export class AppModule { }
+export class AppModule {
+}

@@ -3,7 +3,6 @@ import {NgModule} from '@angular/core';
 
 
 import {AppComponent} from './components/app/app.component';
-import {FolderComponent} from './components/folder/folder.component';
 import {Angular2ImageGalleryModule} from "angular2-image-gallery/src/app";
 import {FolderService} from "./services/folder.service";
 import {HttpClientModule} from "@angular/common/http";
@@ -12,8 +11,7 @@ import {FormsModule} from "@angular/forms";
 
 @NgModule({
   declarations: [
-    AppComponent,
-    FolderComponent
+    AppComponent
   ],
   imports: [
     BrowserModule,

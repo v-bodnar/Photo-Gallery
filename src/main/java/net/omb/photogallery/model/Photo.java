@@ -19,7 +19,8 @@ public class Photo extends GenericEntity<Photo> implements Comparable<Photo> {
     @OneToOne(optional=false, cascade = CascadeType.ALL)
     private ExifData exifData;
 
-    @ManyToMany(mappedBy = "photos")
+    @ManyToMany
+    @JoinTable(name="TAGS_PHOTOS")
     private List<Tag> tags;
 
     public String getPath() {

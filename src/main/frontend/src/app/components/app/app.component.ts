@@ -10,23 +10,24 @@ import {Base64} from "../../Base64";
   styleUrls: ['./app.component.css'],
 })
 export class AppComponent implements OnInit {
-  directory: string;
   folders: Folder[];
   selectedFolder: Folder;
   galleryName: string;
   menuItems: MenuItem[];
   dateFrom: Date;
   dateTo: Date;
-  tags: string[];
+  tags: string[] = [];
   suggestedTags: string[];
+
+  filters:string;
 
   constructor(private folderService: FolderService) {
   }
 
   ngOnInit() {
     this.getFolder();
-    this.galleryName = this.selectedFolder === undefined ? 'root' : this.selectedFolder.name;
-    this.buildMenu();
+    this.galleryName = 'root';
+    this.buildTopMenu();
   }
 
 
@@ -39,9 +40,11 @@ export class AppComponent implements OnInit {
 
   onGallerySelect() {
     console.log(this.selectedFolder.path);
-    this.directory = Base64.encode(this.selectedFolder.path);
-    this.galleryName = this.selectedFolder == undefined ? 'root' : this.selectedFolder.name;
-    this.buildMenu();
+    if(this.selectedFolder.path == "\\"){
+      this.selectedFolder = undefined;
+    }
+    this.constructFilters();
+    this.buildTopMenu();
   }
 
   changeView() {
@@ -54,10 +57,11 @@ export class AppComponent implements OnInit {
       document.getElementById('expand-menu-button-icon').classList.add('fa-chevron-right');
       document.getElementById('expand-menu-button-icon').classList.remove('fa-chevron-left');
     }
-    this.galleryName = this.selectedFolder == undefined ? 'root' : this.selectedFolder.name + Math.random();
+    this.galleryName = ( this.selectedFolder == undefined ? 'root' : this.selectedFolder.name )+ Math.random()
+
   }
 
-  buildMenu(){
+  buildTopMenu(){
     this.menuItems = [
       {
         label: 'Upload Gallery',
@@ -74,7 +78,36 @@ export class AppComponent implements OnInit {
     ];
   }
 
+  constructFilters() {
+    this.galleryName = ( this.selectedFolder == undefined ? 'root' : this.selectedFolder.name )+ Math.random()
+
+    if (this.selectedFolder !== undefined && this.tags.length !== 0 && this.dateFrom !== undefined && this.dateTo !== undefined) {
+      this.filters = "/findByDirectoryAndTagsLikeAndDateBetween/" + Base64.encode(this.selectedFolder.path) + "/" + this.tags + "/" + this.formatDate(this.dateFrom) + "/" + this.formatDate(this.dateTo);
+    } else if (this.selectedFolder !== undefined && this.tags.length !== 0) {
+      this.filters = "/findByDirectoryAndTagsLike/" + Base64.encode(this.selectedFolder.path) + "/" + this.tags
+    } else if (this.selectedFolder !== undefined && this.dateFrom !== undefined && this.dateTo !== undefined) {
+      this.filters = "/findByDirectoryAndDateBetween/" + Base64.encode(this.selectedFolder.path) + "/" + this.formatDate(this.dateFrom) + "/" + this.formatDate(this.dateTo);
+    } else if (this.tags.length !== 0 && this.dateFrom !== undefined && this.dateTo !== undefined) {
+      this.filters = "/findByTagsLikeAndDateBetween/" + this.tags + "/" + this.formatDate(this.dateFrom) + "/" + this.formatDate(this.dateTo);
+    } else if (this.dateFrom !== undefined && this.dateTo !== undefined) {
+      this.filters = "/findByDateBetween/" + this.formatDate(this.dateFrom) + "/" + this.formatDate(this.dateTo);
+    } else if (this.tags.length !== 0) {
+      this.filters = "/findByTagsLike/" + this.tags;
+    } else if (this.selectedFolder !== undefined) {
+      this.filters = "/findByDirectory/" + Base64.encode(this.selectedFolder.path);
+    } else {
+      this.filters = undefined;
+    }
+    console.log(this.galleryName);
+    console.log(this.filters);
+  }
+
+  formatDate(date:Date):string{
+    let month = ["01","02","03","04","05","06","07","08","09","10","11","12"]
+    return date.getFullYear() + "-" + month[date.getMonth()] + "-" + date.getDate()
+  }
+
   tagSearch(event){
-    this.suggestedTags = ['asd','test'];
+    this.suggestedTags = ['lublin', 'inner', 'барбекю на озере'];
   }
 }

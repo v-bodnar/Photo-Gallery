@@ -18,8 +18,8 @@ public class Tag extends GenericEntity<Tag> {
     @Column(length = 4000)
     private String description;
 
-    @ManyToMany
-    @JoinTable(name="TAGS_PHOTOS")
+
+    @ManyToMany(mappedBy = "tags")
     private List<Photo> photos;
 
     public Tag() {
@@ -34,5 +34,27 @@ public class Tag extends GenericEntity<Tag> {
         this.description = description;
     }
 
+    public String getName() {
+        return name;
+    }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public List<Photo> getPhotos() {
+        return photos;
+    }
+
+    public void setPhotos(List<Photo> photos) {
+        this.photos = photos;
+    }
 }

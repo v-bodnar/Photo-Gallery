@@ -1,8 +1,8 @@
 <div id="header">
   <p-menubar [model]="menuItems">
-    <p-calendar [(ngModel)]="dateFrom" dateFormat="dd.mm.yy" placeholder="Date From"></p-calendar>
-    <p-calendar [(ngModel)]="dateTo" dateFormat="dd.mm.yy" placeholder="Date To"></p-calendar>
-    <p-autoComplete [(ngModel)]="tags" [suggestions]="suggestedTags" (completeMethod)="tagSearch($event)" [multiple]="true" placeholder="Tags"></p-autoComplete>
+    <p-calendar [(ngModel)]="dateFrom" dateFormat="dd.mm.yy" placeholder="Date From" (onSelect)="constructFilters()" (onInput) = "constructFilters()"></p-calendar>
+    <p-calendar [(ngModel)]="dateTo" dateFormat="dd.mm.yy" placeholder="Date To" (onSelect)="constructFilters()" (onInput) = "constructFilters()"></p-calendar>
+    <p-autoComplete [(ngModel)]="tags" [suggestions]="suggestedTags" (completeMethod)="tagSearch($event)" [multiple]="true" placeholder="Tags" (onSelect)="constructFilters()"></p-autoComplete>
 
   </p-menubar>
 </div>
@@ -20,8 +20,8 @@
   <!-- Begin page content -->
   <div id="page-content">
     <div class="container-fluid">
-      <gallery *ngIf="selectedFolder !== null && selectedFolder !== undefined && (selectedFolder.path !== '\\' || tags !== undefined)"
-               [metadataUri]="'http://localhost:8080/api/getGalleryByDirectory/' + directory + '/' + tags"
+      <gallery *ngIf="filters !== null && filters !== undefined"
+               [metadataUri]="'http://localhost:8080/api/' + filters"
                [galleryName]="galleryName">
       </gallery>
     </div>

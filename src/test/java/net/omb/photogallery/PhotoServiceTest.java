@@ -3,9 +3,9 @@ package net.omb.photogallery;
 import net.omb.photogallery.model.ExifData;
 import net.omb.photogallery.model.Photo;
 import net.omb.photogallery.model.Tag;
-import net.omb.photogallery.repositories.ExifDataRepository;
 import net.omb.photogallery.repositories.PhotoRepository;
 import net.omb.photogallery.services.PhotoService;
+import org.joda.time.DateTime;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,10 +13,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import static junit.framework.TestCase.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 @WithMockUser(username = "bodik@list.ru")
 @RunWith(SpringRunner.class)
@@ -89,6 +91,15 @@ public class PhotoServiceTest {
         assertNotNull(result);
 
         result = photoService.findByDirectory("2017.06.26 Lublin", true);
+        assertNotNull(result);
+    }
+
+    @Test
+    public void findByPathAndTags() {
+        List<String> tagNames1 = new ArrayList<>(Arrays.asList("lublin"));
+        List<Photo> result = photoService.findByDirectoryAndTagsLikeAndDateBetween("2017.06.26 Lublin\\",tagNames1, new DateTime().minusYears(100).toDate(), new DateTime().toDate(), false);
+        assertNotNull(result);
+        result = photoService.findByDirectoryAndTagsLikeAndDateBetween("2017.06.26 Lublin\\",tagNames1,new DateTime().minusYears(100).toDate(), new DateTime().minusYears(99).toDate(), false);
         assertNotNull(result);
     }
 }

@@ -12,7 +12,9 @@ import net.omb.photogallery.annotations.LogExecutionTime;
 import net.omb.photogallery.exceptions.FileReadException;
 import net.omb.photogallery.model.ExifData;
 import net.omb.photogallery.model.Photo;
+import net.omb.photogallery.model.Tag;
 import net.omb.photogallery.repositories.PhotoRepository;
+import net.omb.photogallery.repositories.TagRepository;
 import net.omb.photogallery.utils.colorthief.ColorThief;
 import org.apache.commons.io.FilenameUtils;
 import org.imgscalr.Scalr;
@@ -34,6 +36,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -85,6 +88,9 @@ public class ImageService {
 
     @Autowired
     private PhotoService photoService;
+
+    @Autowired
+    private TagService tagService;
 
     @Autowired
     private PhotoRepository photoRepository;
@@ -248,7 +254,7 @@ public class ImageService {
         return atLeastOneThumbnailCreated;
     }
 
-    public void addImageInfoToDb(Path originalFile) {
+    public void addImageInfoToDb(Path originalFile, List<Tag> tags) {
         log.info("Saving image info to db");
         originalFile = originalFile.toAbsolutePath().normalize();
         if (photoRepository.findOneByPath(originalFile.toString()).isPresent()) {
@@ -256,7 +262,10 @@ public class ImageService {
             return;
         }
         ExifData exifData = new ExifData();
+
         Photo photo = new Photo();
+        photo.setTags(tags);
+
         photo.setExifData(exifData);
         photo.setPath(originalFile.toString());
         photo.setExtension(FilenameUtils.getExtension(originalFile.toString()));
@@ -346,6 +355,9 @@ public class ImageService {
 
             log.info("Scanning " + scanningFolder + " folder and resizing images");
             try (DirectoryStream<Path> ds = Files.newDirectoryStream(scanningFolder)) {
+                String folderName = scanningFolder.getFileName().toString().replaceAll("[\\p{Punct}\\d]","").trim().toLowerCase();
+                List<Tag> tags = tagService.findAndSaveIfNotExist(new ArrayList<>(Arrays.asList(folderName))); //this tag will be applied for all folder children
+                log.info("'" + folderName + "' tag will be added for all images in this folder");
                 for (Path child : ds) {
                     if (isImage(child)) {
                         log.info("Creating resized copies for: " + child);
@@ -353,7 +365,7 @@ public class ImageService {
                         if (createAllSizes(child)) {
                             resizedImagesCount++;
                         }
-                        addImageInfoToDb(child);
+                        addImageInfoToDb(child, tags);
                     } else if (Files.isDirectory(child) &&
                             //don't scan directories with thumbnails
                             !isOneOfPreviewFolders(child)) {

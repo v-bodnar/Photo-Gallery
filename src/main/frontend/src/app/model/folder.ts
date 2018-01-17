@@ -10,7 +10,7 @@ export class Folder implements TreeNode {
   expandedIcon?: any;
   collapsedIcon?: any;
   selectable?: boolean;
-
+  expanded?: boolean;
 
   constructor(object: any) {
     this.children = [];
@@ -20,6 +20,9 @@ export class Folder implements TreeNode {
       for (let child of object.children) {
         this.children.push(new Folder(child))
       }
+    }
+    if(object.path === "\\"){
+      this.expanded = true;
     }
 
     this.label = this.name;

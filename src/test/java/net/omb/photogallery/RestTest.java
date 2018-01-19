@@ -4,11 +4,13 @@ package net.omb.photogallery;
  * Created by volodymyr.bodnar on 9/7/2017.
  */
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -26,11 +28,13 @@ public class RestTest {
     private MockMvc mockMvc;
 
     @Autowired
-    WebApplicationContext webApplicationContext;
+    private WebApplicationContext webApplicationContext;
+
+    private static final ObjectMapper jacksonMapper = new ObjectMapper();
 
     @Before
     public void setup() {
-        this.mockMvc = MockMvcBuilders.webAppContextSetup(this.webApplicationContext).dispatchOptions(true).build();
+        this.mockMvc = MockMvcBuilders.webAppContextSetup(this.webApplicationContext).defaultRequest(post("/*").accept(MediaType.APPLICATION_JSON)).dispatchOptions(true).build();
     }
 
     @Test
@@ -47,5 +51,19 @@ public class RestTest {
 //        ).andExpect(status().isForbidden());
     }
 
+    @Test
+    public void mapTest() throws Exception {
+//        net.omb.photogallery.model.json.Test test = new net.omb.photogallery.model.json.Test();
+//        mockMvc.perform(
+//                post("/api/uploadPhoto")
+//                        .param("test", jacksonMapper.writeValueAsString(test))
+//        ).andExpect(status().isOk())
+//                .andDo(mvcResult -> System.out.println(mvcResult.getResponse().getContentAsString()));
+
+//        mockMvc.perform(
+//                post("/InstanceServices")
+//                        .param("throwException", "false")
+//        ).andExpect(status().isForbidden());
+    }
 
 }

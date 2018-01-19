@@ -1,8 +1,14 @@
 import {Component, OnInit} from '@angular/core';
 import {FolderService} from "../../services/folder.service";
 import {Folder} from "../../model/folder";
-import {MenuItem} from 'primeng/primeng';
+import {MenuItem, Message} from 'primeng/primeng';
 import {Base64} from "../../Base64";
+import {TagService} from "../../services/tag.service";
+import {Tag} from "../../model/tag";
+import {MessageService} from "primeng/components/common/messageservice";
+import {FileService} from "../../services/file.service";
+declare var jquery:any;
+declare var $ :any;
 
 @Component({
   selector: 'app-root',
@@ -18,18 +24,29 @@ export class AppComponent implements OnInit {
   dateTo: Date;
   tags: string[] = [];
   suggestedTags: string[];
+  allTags: string[] = [];
+  msgs: Message[] = [];
 
   filters:string;
+  displayUploadDialog:boolean = false;
+  displayPhotoDialog:boolean = false;
 
-  constructor(private folderService: FolderService) {
+  constructor(private folderService: FolderService, private tagService: TagService, private fileService: FileService, public messageService: MessageService) {
   }
 
   ngOnInit() {
     this.getFolder();
+    this.getAllTags();
     this.galleryName = 'root';
     this.buildTopMenu();
   }
 
+  getAllTags():void{
+    this.tagService.getTags()
+      .subscribe((tags: [Tag]) => {
+        this.allTags = tags.map(value => value.name);
+      });
+ }
 
   getFolder(): void {
     this.folderService.getRootFolder()
@@ -66,30 +83,38 @@ export class AppComponent implements OnInit {
       {
         label: 'Upload Gallery',
         icon: 'fa-upload',
+        command: (event) => this.showUploadDialog()
       }, {
         label: 'Download Gallery',
         icon: 'fa-download',
+        command: (event) => this.downloadGallery(),
         disabled: this.selectedFolder === undefined
       }, {
         label: 'Add Photo',
         icon: 'fa-download',
-        disabled: this.selectedFolder === undefined
+        disabled: this.selectedFolder === undefined,
+        command: (event) => this.showPhotoDialog()
       }
     ];
+  }
+
+  removeTag(event){
+    this.tags.splice(this.tags.indexOf(event),1);
+    this.constructFilters()
   }
 
   constructFilters() {
     this.galleryName = ( this.selectedFolder == undefined ? 'root' : this.selectedFolder.name )+ Math.random()
 
-    if (this.selectedFolder !== undefined && this.tags.length !== 0 && this.dateFrom !== undefined && this.dateTo !== undefined) {
+    if (this.selectedFolder !== undefined && this.tags.length !== 0 && (this.dateFrom !== null && this.dateFrom !== undefined) && (this.dateTo !== null && this.dateTo !== undefined)) {
       this.filters = "/findByDirectoryAndTagsLikeAndDateBetween/" + Base64.encode(this.selectedFolder.path) + "/" + this.tags + "/" + this.formatDate(this.dateFrom) + "/" + this.formatDate(this.dateTo);
     } else if (this.selectedFolder !== undefined && this.tags.length !== 0) {
       this.filters = "/findByDirectoryAndTagsLike/" + Base64.encode(this.selectedFolder.path) + "/" + this.tags
-    } else if (this.selectedFolder !== undefined && this.dateFrom !== undefined && this.dateTo !== undefined) {
+    } else if (this.selectedFolder !== undefined && (this.dateFrom !== null && this.dateFrom !== undefined) && (this.dateTo !== null && this.dateTo !== undefined)) {
       this.filters = "/findByDirectoryAndDateBetween/" + Base64.encode(this.selectedFolder.path) + "/" + this.formatDate(this.dateFrom) + "/" + this.formatDate(this.dateTo);
-    } else if (this.tags.length !== 0 && this.dateFrom !== undefined && this.dateTo !== undefined) {
+    } else if (this.tags.length !== 0 && (this.dateFrom !== null && this.dateFrom !== undefined) && (this.dateTo !== null && this.dateTo !== undefined)) {
       this.filters = "/findByTagsLikeAndDateBetween/" + this.tags + "/" + this.formatDate(this.dateFrom) + "/" + this.formatDate(this.dateTo);
-    } else if (this.dateFrom !== undefined && this.dateTo !== undefined) {
+    } else if ((this.dateFrom !== null && this.dateFrom !== undefined) && (this.dateTo !== null && this.dateTo !== undefined)) {
       this.filters = "/findByDateBetween/" + this.formatDate(this.dateFrom) + "/" + this.formatDate(this.dateTo);
     } else if (this.tags.length !== 0) {
       this.filters = "/findByTagsLike/" + this.tags;
@@ -108,6 +133,29 @@ export class AppComponent implements OnInit {
   }
 
   tagSearch(event){
-    this.suggestedTags = ['lublin', 'inner', 'барбекю на озере'];
+    this.suggestedTags = [];
+    for(let tag of this.allTags){
+      if(tag.includes(event.query)){
+        this.suggestedTags.push(tag);
+      }
+    }
+  }
+
+  downloadGallery(){
+    this.fileService.downloadGallery(Base64.encode(this.selectedFolder.path))
+      .subscribe(galleryFile => {
+        var downloadUrl= window.URL.createObjectURL(galleryFile);
+        var anchor = document.createElement("a");
+        anchor.download = this.selectedFolder.name + ".zip";
+        anchor.href = downloadUrl;
+        anchor.click();
+      });
+  }
+
+  showUploadDialog() {
+    this.displayUploadDialog = true;
+  }
+  showPhotoDialog() {
+    this.displayPhotoDialog = true;
   }
 }

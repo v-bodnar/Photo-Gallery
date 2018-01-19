@@ -6,12 +6,21 @@ import {AppComponent} from './components/app/app.component';
 import {Angular2ImageGalleryModule} from "angular2-image-gallery/src/app";
 import {FolderService} from "./services/folder.service";
 import {HttpClientModule} from "@angular/common/http";
-import {AutoCompleteModule, CalendarModule, MenubarModule, TreeModule} from "primeng/primeng";
-import {FormsModule} from "@angular/forms";
+import {
+  AutoCompleteModule, CalendarModule, ChipsModule, DialogModule, FileUploadModule, GrowlModule, MenubarModule,
+  MessageModule,
+  TreeModule
+} from "primeng/primeng";
+import {FormsModule, ReactiveFormsModule} from "@angular/forms";
+import {TagService} from "./services/tag.service";
+import { UploadDialogComponent } from './components/upload-dialog/upload-dialog.component';
+import {FileService} from "./services/file.service";
+import {MessageService} from "primeng/components/common/messageservice";
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    UploadDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -21,9 +30,15 @@ import {FormsModule} from "@angular/forms";
     MenubarModule,
     CalendarModule,
     FormsModule,
-    AutoCompleteModule
+    AutoCompleteModule,
+    DialogModule,
+    ChipsModule,
+    FileUploadModule,
+    GrowlModule,
+    ReactiveFormsModule,
+    MessageModule
   ],
-  providers: [FolderService],
+  providers: [FolderService, TagService, FileService, MessageService],
   bootstrap: [AppComponent]
 })
 export class AppModule {

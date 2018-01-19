@@ -1,5 +1,6 @@
 package net.omb.photogallery.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import javafx.geometry.Orientation;
 import net.omb.photogallery.services.ImageService;
 
@@ -19,6 +20,7 @@ public class ExifData extends GenericEntity<ExifData>{
     private int height;
     private String dominantColor;
     @OneToOne(optional=false, mappedBy = "exifData")
+    @JsonIgnore
     private Photo photo;
     private int orientation;
 

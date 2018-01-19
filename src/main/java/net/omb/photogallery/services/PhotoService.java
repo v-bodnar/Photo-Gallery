@@ -4,19 +4,25 @@ import net.omb.photogallery.model.Photo;
 import net.omb.photogallery.model.Tag;
 import net.omb.photogallery.repositories.PhotoRepository;
 import net.omb.photogallery.repositories.TagRepository;
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.*;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -99,6 +105,7 @@ public class PhotoService {
 
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Photo> cq = cb.createQuery(Photo.class);
+        cq.distinct(true);
 
         Root photo = cq.from(Photo.class);
 
@@ -142,6 +149,7 @@ public class PhotoService {
         Join photoTags = photo.join("tags");
         Predicate tagsPredicate = cb.and(photoTags.in(tags));
         cq.select(photo).where(pathPredicate, tagsPredicate);
+        cq.distinct(true);
 
         List<Photo> result = entityManager.createQuery(cq).getResultList();
 
@@ -164,7 +172,7 @@ public class PhotoService {
         Predicate datePredicateTo = cb.and(cb.lt(exifData.get("recordedDate"), dateTo.getTime()));
 
         cq.select(photo).where(pathPredicate, datePredicateFrom, datePredicateTo);
-
+        cq.distinct(true);
         List<Photo> result = entityManager.createQuery(cq).getResultList();
 
         if(recursive){
@@ -190,6 +198,7 @@ public class PhotoService {
         Join photoTags = photo.join("tags");
         Predicate tagsPredicate = cb.and(photoTags.in(tags));
         cq.select(photo).where(tagsPredicate, datePredicateFrom, datePredicateTo);
+        cq.distinct(true);
 
         return entityManager.createQuery(cq).getResultList();
     }
@@ -210,6 +219,7 @@ public class PhotoService {
         Join photoTags = photo.join("tags");
         Predicate tagsPredicate = cb.and(photoTags.in(tags));
         cq.select(photo).where(pathPredicate, tagsPredicate, datePredicateFrom, datePredicateTo);
+        cq.distinct(true);
 
         List<Photo> result = entityManager.createQuery(cq).getResultList();
 

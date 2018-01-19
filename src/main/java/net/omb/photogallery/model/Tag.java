@@ -1,5 +1,7 @@
 package net.omb.photogallery.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinTable;
@@ -18,7 +20,7 @@ public class Tag extends GenericEntity<Tag> {
     @Column(length = 4000)
     private String description;
 
-
+    @JsonIgnore
     @ManyToMany(mappedBy = "tags")
     private List<Photo> photos;
 

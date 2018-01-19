@@ -22,7 +22,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.PostConstruct;
 import javax.imageio.ImageIO;
@@ -39,6 +41,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import static com.drew.metadata.file.FileSystemDirectory.TAG_FILE_SIZE;
 import static net.omb.photogallery.services.ImageService.Size.*;
@@ -261,26 +266,60 @@ public class ImageService {
             log.debug("Information about image already saved to db");
             return;
         }
-        ExifData exifData = new ExifData();
-
         Photo photo = new Photo();
         photo.setTags(tags);
-
-        photo.setExifData(exifData);
+        photo.setExifData(getExifData(originalFile));
+        photo.setSize(originalFile.toFile().length());
         photo.setPath(originalFile.toString());
         photo.setExtension(FilenameUtils.getExtension(originalFile.toString()));
         photo.setName(FilenameUtils.getBaseName(originalFile.toString()));
 
+        photoService.createIfNotExist(photo);
+
+        log.debug("New entry has been added to db");
+
+    }
+
+    public void createGallery(String path, List<Tag> tags, List<MultipartFile> files) throws IOException {
+        Path galleryFolder = Paths.get(imagesFolder + File.separator + path.replace("\\", File.separator).replace("/", File.separator));
+        if(galleryFolder.equals(imagesFolder)){
+            throw new RuntimeException("Can't upload images to root folder");
+        }
+        if (!Files.exists(galleryFolder)) {
+            Files.createDirectories(galleryFolder);
+            createPreviewFoldersStructure(galleryFolder);
+        }
+        tags = tagService.findAndSaveIfNotExist(tags.stream().map(tag -> tag.getName()).collect(Collectors.toList()));
+
+        for (MultipartFile file : files) {
+            Path imageFile = galleryFolder.resolve(Paths.get(file.getOriginalFilename()));
+            file.transferTo(imageFile.toFile());
+            createAllSizes(imageFile);
+            addImageInfoToDb(imageFile, tags);
+        }
+    }
+
+    public void addPhoto(String path, List<Tag> tags, List<MultipartFile> files) throws IOException {
+        Path galleryFolder = Paths.get(imagesFolder + File.separator + path.replace("\\", File.separator).replace("/", File.separator));
+        if (!Files.exists(galleryFolder)) {
+            throw new RuntimeException("Gallery folder does not exist");
+        }
+        tags = tagService.findAndSaveIfNotExist(tags.stream().map(tag -> tag.getName()).collect(Collectors.toList()));
+
+        for (MultipartFile file : files) {
+            Path imageFile = galleryFolder.resolve(Paths.get(file.getOriginalFilename()));
+            file.transferTo(imageFile.toFile());
+            createAllSizes(imageFile);
+            addImageInfoToDb(imageFile, tags);
+        }
+    }
+
+    private ExifData getExifData(Path originalFile) {
+        ExifData exifData = new ExifData();
+
         try {
             Metadata metadata = ImageMetadataReader.readMetadata(originalFile.toFile());
-            FileSystemDirectory fileInfo = metadata.getFirstDirectoryOfType(FileSystemDirectory.class);
-            if (fileInfo != null) {
-                try {
-                    photo.setSize(fileInfo.getLong(TAG_FILE_SIZE));
-                } catch (MetadataException e) {
-                    log.error("Can't get file size", e);
-                }
-            }
+
             ExifIFD0Directory exifIfInfo = metadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
             if (exifIfInfo != null) {
                 exifData.setCameraModel(exifIfInfo.getString(ExifDirectoryBase.TAG_MODEL, StandardCharsets.UTF_8.name()));
@@ -309,13 +348,11 @@ public class ImageService {
             BufferedImage originalImage = ImageIO.read(originalFile.toFile());
             exifData.setDominantColor(ColorThief.getColorAsHash(originalImage));
 
-            photoService.createIfNotExist(photo);
-
-            log.debug("New entry has been added to db");
         } catch (IOException | ImageProcessingException e) {
             throw new RuntimeException("Could not read Image data", e);
         }
 
+        return exifData;
     }
 
     private String getFormat(Path file) {
@@ -355,7 +392,7 @@ public class ImageService {
 
             log.info("Scanning " + scanningFolder + " folder and resizing images");
             try (DirectoryStream<Path> ds = Files.newDirectoryStream(scanningFolder)) {
-                String folderName = scanningFolder.getFileName().toString().replaceAll("[\\p{Punct}\\d]","").trim().toLowerCase();
+                String folderName = scanningFolder.getFileName().toString().replaceAll("[\\p{Punct}\\d]", "").trim().toLowerCase();
                 List<Tag> tags = tagService.findAndSaveIfNotExist(new ArrayList<>(Arrays.asList(folderName))); //this tag will be applied for all folder children
                 log.info("'" + folderName + "' tag will be added for all images in this folder");
                 for (Path child : ds) {
@@ -397,6 +434,36 @@ public class ImageService {
         public int getHeight() {
             return height;
         }
+    }
+
+    public ByteArrayResource pack(String sourceDirPath) throws IOException {
+        Path pp = Paths.get(imagesFolder + File.separator + sourceDirPath);
+        if (!Files.exists(pp) || !Files.isDirectory(pp)) {
+            throw new RuntimeException("Can't find gallery folder");
+        }
+        Path p = Files.createTempFile(pp.getFileName().toString(), "");
+        try (ZipOutputStream zs = new ZipOutputStream(Files.newOutputStream(p))) {
+
+            Files.walk(pp)
+                    .filter(path -> !Files.isDirectory(path) && !previewFolders.contains(path.getParent().getFileName()))
+                    .forEach(path -> {
+                        ZipEntry zipEntry = new ZipEntry(pp.relativize(path).toString());
+                        try {
+                            zs.putNextEntry(zipEntry);
+                            Files.copy(path, zs);
+                            zs.closeEntry();
+                        } catch (IOException e) {
+                            System.err.println(e);
+                        }
+                    });
+        }
+        ByteArrayResource resource = new ByteArrayResource(Files.readAllBytes(p)) {
+            @Override
+            public String getFilename() {
+                return pp.getFileName().toString() + ".zip";
+            }
+        };
+        return resource;
     }
 
 }

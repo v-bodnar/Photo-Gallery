@@ -33,4 +33,9 @@ html,body {
 .expand-menu-button{
   width: 15px;
 }
-
+.ui-datepicker-calendar td a{
+  color: white;
+}
+.popover{
+  max-width: 300px;
+}

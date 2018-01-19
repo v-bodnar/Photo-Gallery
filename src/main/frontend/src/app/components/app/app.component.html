@@ -1,8 +1,16 @@
+<p-growl [(value)]="msgs"></p-growl>
 <div id="header">
   <p-menubar [model]="menuItems">
-    <p-calendar [(ngModel)]="dateFrom" dateFormat="dd.mm.yy" placeholder="Date From" (onSelect)="constructFilters()" (onInput) = "constructFilters()"></p-calendar>
-    <p-calendar [(ngModel)]="dateTo" dateFormat="dd.mm.yy" placeholder="Date To" (onSelect)="constructFilters()" (onInput) = "constructFilters()"></p-calendar>
-    <p-autoComplete [(ngModel)]="tags" [suggestions]="suggestedTags" (completeMethod)="tagSearch($event)" [multiple]="true" placeholder="Tags" (onSelect)="constructFilters()"></p-autoComplete>
+    <p-calendar [(ngModel)]="dateFrom" dateFormat="dd.mm.yy" placeholder="Date From"
+                (onSelect)="constructFilters()"
+                (onInput)="constructFilters()"></p-calendar>
+    <p-calendar [(ngModel)]="dateTo" dateFormat="dd.mm.yy" placeholder="Date To"
+                (onSelect)="constructFilters()"
+                (onInput)="constructFilters()"></p-calendar>
+    <p-autoComplete [(ngModel)]="tags" [suggestions]="suggestedTags" (completeMethod)="tagSearch($event)"
+                    [multiple]="true" placeholder="Tags"
+                    (onSelect)="constructFilters()"
+                    (onUnselect)="removeTag($event)"></p-autoComplete>
 
   </p-menubar>
 </div>
@@ -27,4 +35,11 @@
     </div>
   </div>
 
+  <p-dialog header="Upload Gallery" [(visible)]="displayUploadDialog" modal="modal" width="800" [responsive]="true">
+    <upload-form></upload-form>
+  </p-dialog>
+
+  <p-dialog header="Upload Photos" [(visible)]="displayPhotoDialog" modal="modal" width="800" [responsive]="true">
+    <upload-form [galleryNameDisabled]="true" galleryPath="\"></upload-form>
+  </p-dialog>
 </div>

@@ -2,9 +2,11 @@ package net.omb.photogallery.model.json;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import net.omb.photogallery.model.ExifData;
 import net.omb.photogallery.model.Photo;
 import net.omb.photogallery.services.ImageService;
 import net.omb.photogallery.utils.PropertiesUtil;
+import org.apache.commons.io.FilenameUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -52,6 +54,8 @@ public class Preview {
     private Image raw;
     private String dominantColor;
     private int orientation;
+    private ExifData exifData;
+    private String name;
 
 
     public Preview() {
@@ -61,7 +65,8 @@ public class Preview {
         int width = photo.getExifData().getWidth();
         int height = photo.getExifData().getHeight();
         this.orientation =  photo.getExifData().getOrientation();
-
+        this.exifData = photo.getExifData();
+        this.name = FilenameUtils.getName(photo.getPath());
         this.setRaw(new Image(formDownloadUrl(photo.getPath(), RAW), width, height));
         this.setPreviewXXS(new Image(formDownloadUrl(photo.getPath(), XXS), calculateWidth(width, height, XXS.getHeight()), XXS.getHeight()));
         this.setPreviewXS(new Image(formDownloadUrl(photo.getPath(), XS), calculateWidth(width, height, XS.getHeight()), XS.getHeight()));
@@ -168,5 +173,21 @@ public class Preview {
 
     public void setOrientation(int orientation) {
         this.orientation = orientation;
+    }
+
+    public ExifData getExifData() {
+        return exifData;
+    }
+
+    public void setExifData(ExifData exifData) {
+        this.exifData = exifData;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

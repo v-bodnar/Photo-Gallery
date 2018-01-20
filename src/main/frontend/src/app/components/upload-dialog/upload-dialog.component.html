@@ -1,0 +1,44 @@
+<div class="container">
+  <form [formGroup]="uploadForm">
+    <div class="form-group row">
+      <label for="path-input" class="col-3 col-form-label">Upload Path</label>
+      <div class="col-6">
+        <input id="path-input" type="text" pInputText
+               value="{{parent.selectedFolder === undefined ? '\\' : parent.selectedFolder.path}}" class="form-control"
+               disabled="true">
+      </div>
+    </div>
+
+    <div class="form-group row" *ngIf="!galleryNameDisabled">
+      <label for="name-input" class="col-3 col-form-label">Gallery Name(Path)</label>
+      <div class="col-6">
+        <input  id="name-input" type="text" pInputText [formControl]="uploadForm.controls['name-input']"
+               [(ngModel)]="galleryPath" class="form-control" >
+      </div>
+      <p-message *ngIf="!uploadForm.controls['name-input'].valid && uploadForm.controls['name-input'].touched" severity="error" text="Required" class="col-3"></p-message>
+    </div>
+
+    <div class="form-group row">
+      <label for="tags-input" class="col-3 col-form-label">Tags</label>
+      <div class="col-6">
+        <p-chips id="tags-input" [(ngModel)]="tags" class="form-control" [formControl]="uploadForm.controls['tags-input']"></p-chips>
+      </div>
+      <p-message *ngIf="!uploadForm.controls['tags-input'].valid && uploadForm.controls['tags-input'].touched" severity="error" text="Required" class="col-3"></p-message>
+    </div>
+
+    <div class="form-group row">
+      <label for="upload-files" class="col-3 col-form-label">Images</label>
+      <div class="col-6">
+        <p-fileUpload id="upload-files" name="demo[]" #form
+                      multiple="multiple" accept="image/*" maxFileSize="10000000" customUpload="true"
+                      (uploadHandler)="upload($event,form)">
+          <ng-template pTemplate="content">
+            <ul *ngIf="uploadedFiles.length">
+              <li *ngFor="let file of uploadedFiles">{{file.name}} - {{file.size}} bytes</li>
+            </ul>
+          </ng-template>
+        </p-fileUpload>
+      </div>
+    </div>
+  </form>
+</div>

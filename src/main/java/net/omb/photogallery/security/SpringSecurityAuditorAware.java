@@ -27,9 +27,7 @@ public class SpringSecurityAuditorAware implements AuditorAware<String> {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || !authentication.isAuthenticated() || (authentication.getPrincipal() instanceof String && authentication.getPrincipal().equals("anonymousUser"))) {
-            //todo
             log.error("No authenticated user!");
-            return Optional.of("anonymousUser");
         }
         User user = usersRepository.findByUsername(((JwtUser)authentication.getPrincipal()).getUsername()).get();
         return Optional.of(user.getUsername());

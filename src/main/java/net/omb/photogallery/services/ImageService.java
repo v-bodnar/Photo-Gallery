@@ -23,6 +23,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -99,6 +103,10 @@ public class ImageService {
 
     @Autowired
     private PhotoRepository photoRepository;
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
 
     private java.util.List<Path> previewFolders = new LinkedList<>();
 
@@ -282,7 +290,7 @@ public class ImageService {
 
     public void createGallery(String path, List<Tag> tags, List<MultipartFile> files) throws IOException {
         Path galleryFolder = Paths.get(imagesFolder + File.separator + path.replace("\\", File.separator).replace("/", File.separator));
-        if(galleryFolder.equals(imagesFolder)){
+        if (galleryFolder.equals(imagesFolder)) {
             throw new RuntimeException("Can't upload images to root folder");
         }
         if (!Files.exists(galleryFolder)) {
@@ -371,50 +379,44 @@ public class ImageService {
     }
 
 
-    public void scanFolderSync() throws InterruptedException {
-        Thread thread = new Thread(new BackgroundResizer());
-        thread.start();
-        thread.join();
+    public void scanFolderSync() {
+        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken("admin", "admin");
+        Authentication authentication = this.authenticationManager.authenticate(token);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        scanFolder(Paths.get(imagesFolder));
+        SecurityContextHolder.getContext().setAuthentication(null);
     }
 
-    private class BackgroundResizer implements Runnable {
-
-        @Override
-        public void run() {
-            scanFolder(Paths.get(imagesFolder));
+    private int scanFolder(Path scanningFolder) {
+        if (!Files.exists(scanningFolder)) {
+            log.error("Folder: " + scanningFolder + " does not exist");
         }
+        int resizedImagesCount = 0;
 
-        private int scanFolder(Path scanningFolder) {
-            if (!Files.exists(scanningFolder)) {
-                log.error("Folder: " + scanningFolder + " does not exist");
-            }
-            int resizedImagesCount = 0;
+        log.info("Scanning " + scanningFolder + " folder and resizing images");
+        try (DirectoryStream<Path> ds = Files.newDirectoryStream(scanningFolder)) {
+            String folderName = scanningFolder.getFileName().toString().replaceAll("[\\p{Punct}\\d]", "").trim().toLowerCase();
+            List<Tag> tags = tagService.findAndSaveIfNotExist(new ArrayList<>(Arrays.asList(folderName))); //this tag will be applied for all folder children
+            log.info("'" + folderName + "' tag will be added for all images in this folder");
+            for (Path child : ds) {
+                if (isImage(child)) {
+                    log.info("Creating resized copies for: " + child);
 
-            log.info("Scanning " + scanningFolder + " folder and resizing images");
-            try (DirectoryStream<Path> ds = Files.newDirectoryStream(scanningFolder)) {
-                String folderName = scanningFolder.getFileName().toString().replaceAll("[\\p{Punct}\\d]", "").trim().toLowerCase();
-                List<Tag> tags = tagService.findAndSaveIfNotExist(new ArrayList<>(Arrays.asList(folderName))); //this tag will be applied for all folder children
-                log.info("'" + folderName + "' tag will be added for all images in this folder");
-                for (Path child : ds) {
-                    if (isImage(child)) {
-                        log.info("Creating resized copies for: " + child);
-
-                        if (createAllSizes(child)) {
-                            resizedImagesCount++;
-                        }
-                        addImageInfoToDb(child, tags);
-                    } else if (Files.isDirectory(child) &&
-                            //don't scan directories with thumbnails
-                            !isOneOfPreviewFolders(child)) {
-                        resizedImagesCount += scanFolder(child);
+                    if (createAllSizes(child)) {
+                        resizedImagesCount++;
                     }
+                    addImageInfoToDb(child, tags);
+                } else if (Files.isDirectory(child) &&
+                        //don't scan directories with thumbnails
+                        !isOneOfPreviewFolders(child)) {
+                    resizedImagesCount += scanFolder(child);
                 }
-            } catch (IOException e) {
-                log.error(e.getMessage(), e);
             }
-            log.info("Resized " + resizedImagesCount + " images");
-            return resizedImagesCount;
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
         }
+        log.info("Resized " + resizedImagesCount + " images");
+        return resizedImagesCount;
     }
 
     private boolean isImage(Path path) {

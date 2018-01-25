@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import net.omb.photogallery.model.ExifData;
 import net.omb.photogallery.model.Photo;
+import net.omb.photogallery.model.Tag;
 import net.omb.photogallery.services.ImageService;
 import net.omb.photogallery.utils.PropertiesUtil;
 import org.apache.commons.io.FilenameUtils;
@@ -12,6 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Base64;
+import java.util.List;
 
 import static net.omb.photogallery.services.ImageService.Size.*;
 
@@ -56,6 +58,7 @@ public class Preview {
     private int orientation;
     private ExifData exifData;
     private String name;
+    private List<Tag> tags;
 
 
     public Preview() {
@@ -67,6 +70,7 @@ public class Preview {
         this.orientation =  photo.getExifData().getOrientation();
         this.exifData = photo.getExifData();
         this.name = FilenameUtils.getName(photo.getPath());
+        this.tags = photo.getTags();
         this.setRaw(new Image(formDownloadUrl(photo.getPath(), RAW), width, height));
         this.setPreviewXXS(new Image(formDownloadUrl(photo.getPath(), XXS), calculateWidth(width, height, XXS.getHeight()), XXS.getHeight()));
         this.setPreviewXS(new Image(formDownloadUrl(photo.getPath(), XS), calculateWidth(width, height, XS.getHeight()), XS.getHeight()));
@@ -189,5 +193,13 @@ public class Preview {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public List<Tag> getTags() {
+        return tags;
+    }
+
+    public void setTags(List<Tag> tags) {
+        this.tags = tags;
     }
 }

@@ -8,17 +8,11 @@ import { catchError, map, tap } from 'rxjs/operators';
 import { Folder } from '../model/folder';
 import {Tag} from "../model/tag";
 
-const httpOptions = {
-  headers: new HttpHeaders({ 'Content-Type': 'application/json' })
-};
-
 @Injectable()
 export class TagService {
   private tagsURL = 'api/getTags/';
 
-  constructor(private http: HttpClient) {
-
-  }
+  constructor(private http: HttpClient) {}
 
   getTags (): Observable<[Tag]> {
     return this.http.get<[Tag]>(this.tagsURL);

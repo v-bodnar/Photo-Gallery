@@ -30,6 +30,7 @@ export class HomeComponent implements OnInit {
   filters:string;
   displayUploadDialog:boolean = false;
   displayPhotoDialog:boolean = false;
+  displayUsersDialog:boolean = false;
 
   constructor(private router: Router,
               private folderService: FolderService,
@@ -105,6 +106,10 @@ export class HomeComponent implements OnInit {
         icon: 'fa-download',
         disabled: this.selectedFolder === undefined,
         command: (event) => this.showPhotoDialog()
+      }, {
+        label: 'Users',
+        icon: 'fa-users',
+        command: (event) => this.showUsersDialog()
       }
     ];
   }
@@ -168,6 +173,9 @@ export class HomeComponent implements OnInit {
   }
   showPhotoDialog() {
     this.displayPhotoDialog = true;
+  }
+  showUsersDialog() {
+    this.displayUsersDialog = true;
   }
 
 }

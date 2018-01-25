@@ -1,6 +1,7 @@
 package net.omb.photogallery.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -22,12 +23,16 @@ public class GenericEntity<T extends Serializable> implements Serializable {
     @GeneratedValue
     private long id;
     @CreatedDate
+    @JsonIgnore
     private long createdDate;
     @LastModifiedDate
+    @JsonIgnore
     private long modifiedDate;
     @CreatedBy
+    @JsonIgnore
     private String createdBy;
     @LastModifiedBy
+    @JsonIgnore
     private String updatedBy;
 
     @Version

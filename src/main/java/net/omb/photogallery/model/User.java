@@ -1,16 +1,12 @@
 package net.omb.photogallery.model;
 
-import org.springframework.data.annotation.PersistenceConstructor;
-import org.springframework.security.core.CredentialsContainer;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.AuthorityUtils;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import java.util.*;
-
-import static org.springframework.security.core.userdetails.User.withDefaultPasswordEncoder;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Created by volodymyr.bodnar on 6/19/2017.
@@ -31,11 +27,13 @@ public class User extends GenericEntity<User>{
 
     @Column(name = "ENABLED")
     @NotNull
+    @JsonIgnore
     private Boolean enabled;
 
     @Column(name = "LASTPASSWORDRESETDATE")
     @Temporal(TemporalType.TIMESTAMP)
     @NotNull
+    @JsonIgnore
     private Date lastPasswordResetDate;
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)

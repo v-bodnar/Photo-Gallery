@@ -3,6 +3,7 @@ package net.omb.photogallery.controllers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import net.omb.photogallery.annotations.LogExecutionTime;
 import net.omb.photogallery.model.Photo;
 import net.omb.photogallery.model.Tag;
 import net.omb.photogallery.model.json.Folder;
@@ -20,6 +21,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -42,6 +44,7 @@ import java.util.stream.Collectors;
  * Created by volodymyr.bodnar on 8/18/2017.
  */
 @Controller
+@LogExecutionTime
 @RequestMapping(value = "api")
 public class PhotoController {
 
@@ -109,6 +112,7 @@ public class PhotoController {
         return responseFromPhotoList(photoService.findByDirectory(new String(Base64.getDecoder().decode(directory.getBytes(StandardCharsets.UTF_8))), false));
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @RequestMapping(value = {"/uploadPhotos", "/uploadPhotos/"}, method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> uploadPhotos(@RequestParam List<MultipartFile> files,
                                              @RequestParam String tags,

@@ -1,0 +1,47 @@
+<div class="container">
+  <form [formGroup]="userForm">
+
+    <p-dataTable [value]="users" selectionMode="single" [metaKeySelection]="false" dataKey="username" (onRowSelect)="onRowSelect($event)" (onRowUnselect)="onRowUnselect()">
+      <p-column field="username" header="Username"></p-column>
+    </p-dataTable>
+
+    <div class="form-group row mt-3" *ngIf="!galleryNameDisabled">
+      <label for="username" class="col-3 col-form-label">Username</label>
+      <div class="col-6">
+        <input id="username" type="text" pInputText [formControl]="userForm.controls['username']"
+               class="form-control">
+      </div>
+      <p-message *ngIf="!userForm.controls['username'].valid && userForm.controls['username'].touched"
+                 severity="error" text="Required" class="col-3"></p-message>
+    </div>
+
+    <div class="form-group row" *ngIf="!galleryNameDisabled">
+      <label for="password" class="col-3 col-form-label">Password</label>
+      <div class="col-6">
+        <input id="password" type="password" pPassword [formControl]="userForm.controls['password']"
+               class="form-control">
+      </div>
+      <p-message *ngIf="!userForm.controls['password'].valid && userForm.controls['password'].touched"
+                 severity="error" text="Required" class="col-3"></p-message>
+    </div>
+
+    <div class="form-group row" *ngIf="!galleryNameDisabled">
+      <label for="roles" class="col-3 col-form-label">Role</label>
+      <div class="col-6">
+        <p-dropdown id="roles" [options]="roles" [formControl]="userForm.controls['roles']" placeholder="Select Role" optionLabel="name" [style]="{'width':'100%'}"></p-dropdown>
+      </div>
+      <p-message *ngIf="!userForm.controls['roles'].valid && userForm.controls['roles'].touched"
+                 severity="error" text="Required" class="col-3"></p-message>
+    </div>
+
+    <div class="form-group row">
+      <div class="col-6">
+        <button pButton type="submit" (click)="submit()" label="{{selectedUser ? 'Save' : 'Create'}}"
+                class="ui-button-secondary"></button>
+        <button pButton *ngIf="selectedUser" type="delete" (click)="delete()" label="Delete"
+                class="ui-button-secondary"></button>
+      </div>
+    </div>
+
+  </form>
+</div>

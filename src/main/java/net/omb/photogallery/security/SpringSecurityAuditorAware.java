@@ -31,7 +31,7 @@ public class SpringSecurityAuditorAware implements AuditorAware<String> {
             log.error("No authenticated user!");
             return Optional.of("anonymousUser");
         }
-        User user = usersRepository.findOneByEmail(((org.springframework.security.core.userdetails.User)authentication.getPrincipal()).getUsername()).get();
+        User user = usersRepository.findByUsername(((org.springframework.security.core.userdetails.User)authentication.getPrincipal()).getUsername()).get();
         return Optional.of(user.getUsername());
 
     }

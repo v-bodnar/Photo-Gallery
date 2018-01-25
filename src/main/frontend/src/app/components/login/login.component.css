@@ -1,0 +1,13 @@
+.form-control {
+  width: 200px;
+  margin-bottom:10px;
+}
+
+.btn {
+  margin-top:20px;
+}
+.login-form{
+  border: 1px solid dodgerblue;
+  margin-top: 100px;
+  padding: 60px 0px 0px 0px
+}

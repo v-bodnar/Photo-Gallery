@@ -2,8 +2,8 @@ import {Component, Host, Input, OnInit} from '@angular/core';
 import {FileService} from "../../services/file.service";
 import {HttpEventType, HttpResponse} from "@angular/common/http";
 import {Tag} from "../../model/tag";
-import {AppComponent} from "../app/app.component";
 import {FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
+import {HomeComponent} from "../home/home.component";
 
 @Component({
   selector: 'upload-form',
@@ -17,7 +17,7 @@ export class UploadDialogComponent implements OnInit {
   uploadForm : FormGroup;
   @Input() galleryNameDisabled : boolean = false;
 
-  constructor(private fileService: FileService,  @Host()private parent: AppComponent, fb: FormBuilder) {
+  constructor(private fileService: FileService,  @Host()private parent: HomeComponent, fb: FormBuilder) {
     this.uploadForm = fb.group({
       'name-input' : [null, Validators.required],
       'tags-input': [[], Validators.required]

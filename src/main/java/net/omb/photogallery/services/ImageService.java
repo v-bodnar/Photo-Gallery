@@ -355,7 +355,7 @@ public class ImageService {
         return exifData;
     }
 
-    private String getFormat(Path file) {
+    public String getFormat(Path file) {
         try {
             String format = Files.probeContentType(file);
 

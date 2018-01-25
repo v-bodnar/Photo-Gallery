@@ -146,7 +146,7 @@ public class PhotoController {
     @RequestMapping(value = {"/getImage/{size}/{path}"}, method = RequestMethod.GET)
     public ResponseEntity<InputStreamResource> getImage(@PathVariable("size") ImageService.Size size, @PathVariable("path") String path) throws Exception {
         return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType("application/octet-stream"))
+                .contentType(MediaType.parseMediaType("image/" +imageService.getFormat(Paths.get(new String(Base64.getDecoder().decode(path))))))
                 .header("content-disposition", "inline;filename=" + new File(new String(Base64.getDecoder().decode(path))).getName())
                 .body(new InputStreamResource(new ByteArrayInputStream(imageService.getImage(new String(Base64.getDecoder().decode(path)), size))));
     }

@@ -14,5 +14,7 @@ import java.util.Optional;
 @Repository
 public interface UsersRepository extends CrudRepository<User, Long> {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    Optional<User> findOneByEmail(String email);
+    Optional<User> findByUsername(String username);
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    Optional<User> findOneByUsernameAndPassword(String username, String password);
 }

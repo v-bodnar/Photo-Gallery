@@ -7,60 +7,52 @@ import org.springframework.security.core.authority.AuthorityUtils;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import javax.validation.constraints.Size;
+import java.util.*;
+
+import static org.springframework.security.core.userdetails.User.withDefaultPasswordEncoder;
 
 /**
  * Created by volodymyr.bodnar on 6/19/2017.
  */
 @Entity(name = "userz")
-public class User extends GenericEntity<User> implements org.springframework.security.core.userdetails.UserDetails, CredentialsContainer {
+public class User extends GenericEntity<User>{
     private static final long serialVersionUID = -8573472150562508317L;
 
-    @Column(unique = true)
-    private String email;
-    @Column(nullable = false)
+    @Column(name = "USERNAME", length = 50, unique = true)
     @NotNull
+    @Size(min = 4, max = 50)
+    private String username;
+
+    @Column(name = "PASSWORD", length = 100)
+    @NotNull
+    @Size(min = 4, max = 100)
     private String password;
-    private HashSet<GrantedAuthority> authorities;
-    private boolean expired;
-    private boolean credentialsExpired;
-    private boolean locked;
-    private boolean enabled;
-    private Role role;
 
-    private User(){}
+    @Column(name = "ENABLED")
+    @NotNull
+    private Boolean enabled;
 
-    @PersistenceConstructor
-    public User(String email, String password, Role role, boolean enabled) {
-        this.email = email;
-        this.password = password;
-        this.role = role;
-        this.enabled = enabled;
-        this.authorities = new HashSet<>(AuthorityUtils.createAuthorityList(role.name()));
+    @Column(name = "LASTPASSWORDRESETDATE")
+    @Temporal(TemporalType.TIMESTAMP)
+    @NotNull
+    private Date lastPasswordResetDate;
+
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "USER_AUTHORITY",
+            joinColumns = {@JoinColumn(name = "USER_ID", referencedColumnName = "ID")},
+            inverseJoinColumns = {@JoinColumn(name = "AUTHORITY_ID", referencedColumnName = "ID")})
+    private List<Authority> authorities;
+
+    public String getUsername() {
+        return username;
     }
 
-    public String getEmail() {
-        return email;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    @Override
-    public void eraseCredentials() {
-        password = null;
-    }
-
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return authorities;
-    }
-
-    @Override
     public String getPassword() {
         return password;
     }
@@ -69,36 +61,27 @@ public class User extends GenericEntity<User> implements org.springframework.sec
         this.password = password;
     }
 
-    @Override
-    public String getUsername() {
-        return email;
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return !expired;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return !locked;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return !credentialsExpired;
-    }
-
-    @Override
-    public boolean isEnabled() {
+    public Boolean getEnabled() {
         return enabled;
     }
 
-    public Role getRole() {
-        return role;
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
     }
 
-    public void setRole(Role role) {
-        this.role = role;
+    public List<Authority> getAuthorities() {
+        return authorities;
+    }
+
+    public void setAuthorities(List<Authority> authorities) {
+        this.authorities = authorities;
+    }
+
+    public Date getLastPasswordResetDate() {
+        return lastPasswordResetDate;
+    }
+
+    public void setLastPasswordResetDate(Date lastPasswordResetDate) {
+        this.lastPasswordResetDate = lastPasswordResetDate;
     }
 }

@@ -39,3 +39,8 @@ html,body {
 .popover{
   max-width: 300px;
 }
+
+.ui-autocomplete{
+  top:-2px;
+}
+

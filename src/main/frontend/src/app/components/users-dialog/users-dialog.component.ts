@@ -17,7 +17,7 @@ export class UsersDialogComponent implements OnInit {
   userForm: FormGroup;
   roles:Authorities[];
 
-  constructor(private userService: UsersService, fb: FormBuilder, @Host() private parent: HomeComponent) {
+  constructor(private userService: UsersService, fb: FormBuilder, @Host() public parent: HomeComponent) {
     this.userForm = fb.group({
       'username': [null, Validators.required],
       'password': [null, Validators.required],
@@ -73,7 +73,7 @@ export class UsersDialogComponent implements OnInit {
     );
   }
 
-  private submit() {
+  public submit() {
     this.validateAllFormFields(this.userForm);
     if (this.userForm.valid) {
       console.log("submit user")

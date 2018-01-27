@@ -2,7 +2,9 @@ package net.omb.photogallery;
 
 import net.omb.photogallery.security.SpringSecurityAuditorAware;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
@@ -20,7 +22,6 @@ public class PhotoGalleryApplication extends SpringBootServletInitializer {
 	}
 
 	public static void main(String[] args) {
-		//startDerbyNetworkServer();
 		SpringApplication.run(PhotoGalleryApplication.class, args);
 	}
 	@Bean
@@ -38,14 +39,4 @@ public class PhotoGalleryApplication extends SpringBootServletInitializer {
 			}
 		};
 	}
-//	private static void startDerbyNetworkServer(){
-//		try {
-//			NetworkServerControl server = new NetworkServerControl
-//					(InetAddress.getByName("localhost"),1527);
-//
-//			server.start(new PrintWriter(System.out));
-//		}catch (Exception e) {
-//			throw new RuntimeException("Could not start derby network server" + e.getMessage());
-//		}
-//	}
 }

@@ -5,7 +5,7 @@
       <p-column field="username" header="Username"></p-column>
     </p-dataTable>
 
-    <div class="form-group row mt-3" *ngIf="!galleryNameDisabled">
+    <div class="form-group row mt-3">
       <label for="username" class="col-3 col-form-label">Username</label>
       <div class="col-6">
         <input id="username" type="text" pInputText [formControl]="userForm.controls['username']"
@@ -15,7 +15,7 @@
                  severity="error" text="Required" class="col-3"></p-message>
     </div>
 
-    <div class="form-group row" *ngIf="!galleryNameDisabled">
+    <div class="form-group row">
       <label for="password" class="col-3 col-form-label">Password</label>
       <div class="col-6">
         <input id="password" type="password" pPassword [formControl]="userForm.controls['password']"
@@ -25,7 +25,7 @@
                  severity="error" text="Required" class="col-3"></p-message>
     </div>
 
-    <div class="form-group row" *ngIf="!galleryNameDisabled">
+    <div class="form-group row">
       <label for="roles" class="col-3 col-form-label">Role</label>
       <div class="col-6">
         <p-dropdown id="roles" [options]="roles" [formControl]="userForm.controls['roles']" placeholder="Select Role" optionLabel="name" [style]="{'width':'100%'}"></p-dropdown>

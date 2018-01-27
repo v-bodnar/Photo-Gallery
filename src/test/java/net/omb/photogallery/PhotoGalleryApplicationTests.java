@@ -6,6 +6,7 @@
 //import org.apache.derby.drda.NetworkServerControl;
 //import org.junit.Assert;
 //import org.junit.Before;
+//import org.junit.Ignore;
 //import org.junit.Test;
 //import org.junit.runner.RunWith;
 //import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,7 @@
 //
 //@RunWith(SpringRunner.class)
 //@SpringBootTest
+//@Ignore
 //public class PhotoGalleryApplicationTests {
 ////    @Before
 ////    public void startDerbyNetworkServer() {
@@ -36,7 +38,7 @@
 //
 //    @Test
 //    public void persistanceTest() {
-//        User user = new User("bodik@list.ru", "Aq1sw2de3", Role.ADMIN, true);
+//        User user = new User("bodik@list.ru", "Aq1sw2de3", Role.ROLE_ADMIN, true);
 //        usersRepository.save(user);
 //        User foundUser = usersRepository.findById(user.getId()).orElseGet(null);
 //        assertTrue(foundUser.equals(user));

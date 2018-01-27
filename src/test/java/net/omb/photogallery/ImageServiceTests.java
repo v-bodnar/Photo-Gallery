@@ -2,6 +2,7 @@ package net.omb.photogallery;
 
 import net.omb.photogallery.services.ImageService;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,7 @@ import java.nio.file.Paths;
 @WithMockUser(username = "bodik@list.ru")
 @RunWith(SpringRunner.class)
 @SpringBootTest
+@Ignore
 public class ImageServiceTests {
     @Autowired
     private ImageService imageService;
@@ -30,6 +32,7 @@ public class ImageServiceTests {
 
 
     @Test
+    @Ignore
     public void scanFolder() throws InterruptedException {
         imageService.scanFolderSync();
     }

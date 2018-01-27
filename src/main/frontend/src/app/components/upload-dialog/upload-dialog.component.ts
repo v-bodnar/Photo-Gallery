@@ -17,7 +17,7 @@ export class UploadDialogComponent implements OnInit {
   uploadForm : FormGroup;
   @Input() galleryNameDisabled : boolean = false;
 
-  constructor(private fileService: FileService,  @Host()private parent: HomeComponent, fb: FormBuilder) {
+  constructor(private fileService: FileService,  @Host()public parent: HomeComponent, fb: FormBuilder) {
     this.uploadForm = fb.group({
       'name-input' : [null, Validators.required],
       'tags-input': [[], Validators.required]

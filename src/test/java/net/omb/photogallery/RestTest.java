@@ -6,6 +6,7 @@ package net.omb.photogallery;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest
+@Ignore
 public class RestTest {
     private MockMvc mockMvc;
 
@@ -38,6 +40,7 @@ public class RestTest {
     }
 
     @Test
+    @Ignore
     public void restAuthorizationTest() throws Exception {
         mockMvc.perform(
                 post("/testService")
@@ -52,6 +55,7 @@ public class RestTest {
     }
 
     @Test
+    @Ignore
     public void mapTest() throws Exception {
 //        net.omb.photogallery.model.json.Test test = new net.omb.photogallery.model.json.Test();
 //        mockMvc.perform(

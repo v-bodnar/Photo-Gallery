@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.omb.photogallery.model.json.Folder;
 import net.omb.photogallery.services.DiskService;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import static junit.framework.TestCase.assertNotNull;
 @WithMockUser(username = "bodik@list.ru")
 @RunWith(SpringRunner.class)
 @SpringBootTest
+@Ignore
 public class DiskServiceTest {
     @Autowired
     private DiskService diskService;
@@ -25,6 +27,7 @@ public class DiskServiceTest {
     private String rootFolder;
 
     @Test
+    @Ignore
     public void getFolders() throws JsonProcessingException {
         Folder folder = diskService.getFolders(null);
         assertNotNull(folder);

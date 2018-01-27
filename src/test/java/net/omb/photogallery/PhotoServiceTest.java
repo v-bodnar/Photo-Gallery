@@ -6,6 +6,7 @@ import net.omb.photogallery.model.Tag;
 import net.omb.photogallery.repositories.PhotoRepository;
 import net.omb.photogallery.services.PhotoService;
 import org.joda.time.DateTime;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,7 @@ import static org.junit.Assert.assertNull;
 @WithMockUser(username = "bodik@list.ru")
 @RunWith(SpringRunner.class)
 @SpringBootTest
+@Ignore
 public class PhotoServiceTest {
 
 
@@ -33,6 +35,7 @@ public class PhotoServiceTest {
     private PhotoRepository photoRepository;
 
     @Test
+    @Ignore
     public void createIfNotExist() {
         ExifData exifData = new ExifData();
         exifData.setHeight(637);
@@ -51,6 +54,7 @@ public class PhotoServiceTest {
     }
 
     @Test
+    @Ignore
     public void createIfNotExistList() {
         ExifData exifData = new ExifData();
         exifData.setHeight(637);
@@ -83,6 +87,7 @@ public class PhotoServiceTest {
 
 
     @Test
+    @Ignore
     public void findByPath() {
         List<Photo> result = photoService.findByDirectory("2017.06.26 Lublin\\", false);
         assertNotNull(result);
@@ -95,6 +100,7 @@ public class PhotoServiceTest {
     }
 
     @Test
+    @Ignore
     public void findByPathAndTags() {
         List<String> tagNames1 = new ArrayList<>(Arrays.asList("lublin"));
         List<Photo> result = photoService.findByDirectoryAndTagsLikeAndDateBetween("2017.06.26 Lublin\\",tagNames1, new DateTime().minusYears(100).toDate(), new DateTime().toDate(), false);

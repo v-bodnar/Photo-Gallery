@@ -6,7 +6,7 @@
 	<groupId>net.omb</groupId>
 	<artifactId>photo-gallery-server</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<packaging>war</packaging>
+	<packaging>jar</packaging>
 
 	<name>photo-gallery-server</name>
 	<description>Secure photo gallery powered by Spring</description>
@@ -72,24 +72,6 @@
 			<version>0.9.0</version>
 		</dependency>
 
-
-		<!--<dependency>-->
-			<!--<groupId>org.apache.derby</groupId>-->
-			<!--<artifactId>derby</artifactId>-->
-		<!--</dependency>-->
-		<!--<dependency>-->
-			<!--<groupId>org.apache.derby</groupId>-->
-			<!--<artifactId>derbynet</artifactId>-->
-			<!--<version>10.13.1.1</version>-->
-		<!--</dependency>-->
-
-		<!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
-		<dependency>
-			<groupId>org.postgresql</groupId>
-			<artifactId>postgresql</artifactId>
-			<version>42.1.4</version>
-		</dependency>
-
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-validator</artifactId>
@@ -112,16 +94,13 @@
 			<version>${jackson.version}</version>
 
 		</dependency>
-		<!--<dependency>-->
-			<!--<groupId>com.fasterxml.jackson.core</groupId>-->
-			<!--<artifactId>jackson-core</artifactId>-->
-			<!--<version>${jackson.version}</version>-->
-		<!--</dependency>-->
-		<!--<dependency>-->
-			<!--<groupId>com.fasterxml.jackson.core</groupId>-->
-			<!--<artifactId>jackson-annotations</artifactId>-->
-			<!--<version>${jackson.version}</version>-->
-		<!--</dependency>-->
+		<!-- https://mvnrepository.com/artifact/com.h2database/h2 -->
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<version>1.4.196</version>
+		</dependency>
+
 		<!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
 		<dependency>
 			<groupId>commons-io</groupId>
@@ -173,8 +152,60 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<addResources>false</addResources>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>com.github.eirslett</groupId>
+				<artifactId>frontend-maven-plugin</artifactId>
+				<version>1.6
+				</version>
+
+				<configuration>
+					<nodeVersion>v9.3.0</nodeVersion>
+					<npmVersion>5.6.0</npmVersion>
+					<workingDirectory>src/main/frontend</workingDirectory>
+				</configuration>
+
+				<executions>
+					<execution>
+						<id>install node and npm</id>
+						<goals>
+							<goal>install-node-and-npm</goal>
+						</goals>
+					</execution>
+
+					<execution>
+						<id>npm install</id>
+						<goals>
+							<goal>npm</goal>
+						</goals>
+					</execution>
+
+					<execution>
+						<id>npm run build</id>
+						<goals>
+							<goal>npm</goal>
+						</goals>
+
+						<configuration>
+							<arguments>run build</arguments>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+			</resource>
+			<resource>
+				<directory>target/frontend</directory>
+				<targetPath>static</targetPath>
+			</resource>
+		</resources>
+		<finalName>photo-gallery</finalName>
 	</build>
 
 	<repositories>

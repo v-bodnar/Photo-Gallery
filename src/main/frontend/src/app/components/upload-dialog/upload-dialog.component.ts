@@ -16,6 +16,7 @@ export class UploadDialogComponent implements OnInit {
   uploadedFiles: File[] = [];
   uploadForm : FormGroup;
   @Input() galleryNameDisabled : boolean = false;
+  uploadInProgress:boolean=false;
 
   constructor(private fileService: FileService,  @Host()public parent: HomeComponent, fb: FormBuilder) {
     this.uploadForm = fb.group({
@@ -33,6 +34,7 @@ export class UploadDialogComponent implements OnInit {
   upload(event, form) {
     console.log("upload" + event)
     this.validateAllFormFields(this.uploadForm);
+    this.uploadInProgress = true;
     if (this.uploadForm.valid) {
       let tagList: Tag[] = [];
       for (let tagName of this.tags) {
@@ -55,6 +57,7 @@ export class UploadDialogComponent implements OnInit {
           this.parent.messageService.add({severity: 'success', summary: 'Success', detail: 'Added new Gallery'});
           this.parent.galleryName = ( this.parent.selectedFolder == undefined ? 'root' : this.parent.selectedFolder.name )+ Math.random()
           form.msgs=[];
+          this.uploadInProgress = false;
           form.clear();
           this.uploadForm.reset();
         }

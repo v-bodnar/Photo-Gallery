@@ -4,31 +4,27 @@ import net.omb.photogallery.model.Photo;
 import net.omb.photogallery.model.Tag;
 import net.omb.photogallery.repositories.PhotoRepository;
 import net.omb.photogallery.repositories.TagRepository;
-import org.apache.commons.io.FilenameUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.*;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 public class PhotoService {
-
+    protected static final Logger log = LoggerFactory.getLogger(PhotoService.class);
     @PersistenceContext
     private EntityManager entityManager;
 

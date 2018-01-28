@@ -166,9 +166,12 @@ public class ImageService {
 
     public byte[] getImage(String path, Size size) {
         String format = getFormat(Paths.get(path));
+
         if (size == RAW) {
+            log.debug("getImage: " + imagesFolder + File.separator + path);
             return imageToArray(Paths.get(imagesFolder + File.separator + path), format);
         } else {
+            log.debug(imagesFolder + File.separator + Paths.get(path).getParent() + File.separator + size + File.separator + Paths.get(path).getFileName());
             return imageToArray(Paths.get(imagesFolder + File.separator + Paths.get(path).getParent() + File.separator + size + File.separator + Paths.get(path).getFileName()), format);
         }
     }
@@ -268,7 +271,7 @@ public class ImageService {
     }
 
     public void addImageInfoToDb(Path originalFile, List<Tag> tags) {
-        log.info("Saving image info to db");
+        log.info("Saving image info to db " + originalFile);
         originalFile = originalFile.toAbsolutePath().normalize();
         if (photoRepository.findOneByPath(originalFile.toString()).isPresent()) {
             log.debug("Information about image already saved to db");
@@ -290,6 +293,7 @@ public class ImageService {
 
     public void createGallery(String path, List<Tag> tags, List<MultipartFile> files) throws IOException {
         Path galleryFolder = Paths.get(imagesFolder + File.separator + path.replace("\\", File.separator).replace("/", File.separator));
+        log.debug("Gallery path: " + galleryFolder);
         if (galleryFolder.equals(imagesFolder)) {
             throw new RuntimeException("Can't upload images to root folder");
         }
@@ -331,7 +335,9 @@ public class ImageService {
             ExifIFD0Directory exifIfInfo = metadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
             if (exifIfInfo != null) {
                 exifData.setCameraModel(exifIfInfo.getString(ExifDirectoryBase.TAG_MODEL, StandardCharsets.UTF_8.name()));
-                exifData.setRecordedDate(exifIfInfo.getDate(ExifDirectoryBase.TAG_DATETIME).getTime());
+                if(exifIfInfo.getDate(ExifDirectoryBase.TAG_DATETIME) != null) {
+                    exifData.setRecordedDate(exifIfInfo.getDate(ExifDirectoryBase.TAG_DATETIME).getTime());
+                }
                 try {
                     exifData.setOrientation(exifIfInfo.getInt(ExifDirectoryBase.TAG_ORIENTATION));
                 } catch (MetadataException e) {
@@ -368,7 +374,7 @@ public class ImageService {
             String format = Files.probeContentType(file);
 
             for (String imageFormat : ImageIO.getWriterFormatNames()) {
-                if (format.contains(imageFormat)) return imageFormat;
+                if ( format != null && format.contains(imageFormat)) return imageFormat;
             }
         } catch (IOException e) {
             log.error("Error getting file format from " + file, e);

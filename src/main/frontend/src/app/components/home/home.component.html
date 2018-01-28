@@ -32,7 +32,7 @@
   <div id="page-content">
     <div class="container-fluid">
       <gallery *ngIf="filters !== null && filters !== undefined"
-               [metadataUri]="'http://localhost:8080/api/' + filters"
+               [metadataUri]="origin + '/api/' + filters"
                [galleryName]="galleryName">
       </gallery>
     </div>

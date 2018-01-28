@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, Inject, OnInit} from '@angular/core';
 import {MenuItem, Message} from "primeng/primeng";
 import {Base64} from "../../Base64";
 import {FolderService} from "../../services/folder.service";
@@ -9,6 +9,7 @@ import {Tag} from "../../model/tag";
 import {MessageService} from "primeng/components/common/messageservice";
 import {Router} from "@angular/router";
 import {AuthenticationService} from "../../services/authentication.service";
+import {DOCUMENT} from "@angular/common";
 
 @Component({
   selector: 'app-home',
@@ -26,6 +27,7 @@ export class HomeComponent implements OnInit {
   suggestedTags: string[];
   allTags: string[] = [];
   msgs: Message[] = [];
+  origin:string
 
   filters:string;
   displayUploadDialog:boolean = false;
@@ -37,7 +39,9 @@ export class HomeComponent implements OnInit {
               private tagService: TagService,
               private fileService: FileService,
               public messageService: MessageService,
-              private authenticationService: AuthenticationService) {
+              private authenticationService: AuthenticationService,
+              @Inject(DOCUMENT) private document) {
+    this.origin = document.location.origin
   }
 
   ngOnInit() {

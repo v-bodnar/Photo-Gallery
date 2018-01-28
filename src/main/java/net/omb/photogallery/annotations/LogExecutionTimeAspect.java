@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 @Aspect
 @Component
 public class LogExecutionTimeAspect {
-    private static Logger log = LoggerFactory.getLogger("LogExecutionTimeAspect");
+    protected static final Logger log = LoggerFactory.getLogger(LogExecutionTimeAspect.class);
     @Pointcut("within(@LogExecutionTime *)")
     public void beanAnnotatedWithLogExecutionTime() {
     }

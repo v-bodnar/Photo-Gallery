@@ -41,27 +41,36 @@ export class UploadDialogComponent implements OnInit {
         tagList.push(new Tag(tagName))
       }
       let path = this.parent.selectedFolder === undefined ? this.galleryPath : this.parent.selectedFolder.path + "\\" + this.galleryPath;
-      this.fileService.uploadGallery(event.files, tagList, path).subscribe(event => {
-        if (event.type === HttpEventType.UploadProgress) {
-          console.log(Math.round(100 * event.loaded / event.total))
-          //this.progress.percentage = Math.round(100 * event.loaded / event.total);
-        } else if (event instanceof HttpResponse) {
-          console.log('File is completely uploaded!');
-          if(this.galleryNameDisabled){
-            this.parent.displayPhotoDialog = false;
-          }else {
-            this.parent.displayUploadDialog = false;
+      let size = 10;
+      let chunks = Math.ceil(event.files.length / size);
+      while (event.files.length > 0){
+        this.fileService.uploadGallery(event.files.splice(0, size), tagList, path).subscribe(event => {
+          if (event.type === HttpEventType.UploadProgress) {
+            // console.log(Math.round(100 * event.loaded / event.total))
+            // this.progress.percentage = Math.round(100 * event.loaded / event.total);
+          } else if (event instanceof HttpResponse) {
+            if(chunks === 1){
+              console.log('File is completely uploaded!');
+              if(this.galleryNameDisabled){
+                this.parent.displayPhotoDialog = false;
+              }else {
+                this.parent.displayUploadDialog = false;
+              }
+              this.parent.getFolder();
+              this.parent.getAllTags();
+              this.parent.messageService.add({severity: 'success', summary: 'Success', detail: 'Added new Gallery'});
+              this.parent.galleryName = ( this.parent.selectedFolder == undefined ? 'root' : this.parent.selectedFolder.name )+ Math.random()
+              form.msgs=[];
+              this.uploadInProgress = false;
+              form.clear();
+              this.uploadForm.reset();
+            }else{
+              chunks -= 1;
+            }
           }
-          this.parent.getFolder();
-          this.parent.getAllTags();
-          this.parent.messageService.add({severity: 'success', summary: 'Success', detail: 'Added new Gallery'});
-          this.parent.galleryName = ( this.parent.selectedFolder == undefined ? 'root' : this.parent.selectedFolder.name )+ Math.random()
-          form.msgs=[];
-          this.uploadInProgress = false;
-          form.clear();
-          this.uploadForm.reset();
-        }
-      })
+        })
+      }
+
     }
   }
 

@@ -12,37 +12,45 @@
     <div class="form-group row" *ngIf="!galleryNameDisabled">
       <label for="name-input" class="col-3 col-form-label">Gallery Name(Path)</label>
       <div class="col-6">
-        <input  id="name-input" type="text" pInputText [formControl]="uploadForm.controls['name-input']"
-               [(ngModel)]="galleryPath" class="form-control" >
+        <input id="name-input" type="text" pInputText [formControl]="uploadForm.controls['name-input']"
+               [(ngModel)]="galleryPath" class="form-control">
       </div>
-      <p-message *ngIf="!uploadForm.controls['name-input'].valid && uploadForm.controls['name-input'].touched" severity="error" text="Required" class="col-3"></p-message>
+      <p-message *ngIf="!uploadForm.controls['name-input'].valid && uploadForm.controls['name-input'].touched"
+                 severity="error" text="Required" class="col-3"></p-message>
     </div>
 
     <div class="form-group row">
       <label for="tags-input" class="col-3 col-form-label">Tags</label>
       <div class="col-6">
-        <p-chips id="tags-input" [(ngModel)]="tags" class="form-control" [formControl]="uploadForm.controls['tags-input']"></p-chips>
+        <p-chips id="tags-input" [(ngModel)]="tags" class="form-control"
+                 [formControl]="uploadForm.controls['tags-input']"></p-chips>
       </div>
-      <p-message *ngIf="!uploadForm.controls['tags-input'].valid && uploadForm.controls['tags-input'].touched" severity="error" text="Required" class="col-3"></p-message>
+      <p-message *ngIf="!uploadForm.controls['tags-input'].valid && uploadForm.controls['tags-input'].touched"
+                 severity="error" text="Required" class="col-3"></p-message>
     </div>
+
 
     <div class="form-group row">
       <label for="upload-files" class="col-3 col-form-label">Images</label>
       <div class="col-6">
-        <p-fileUpload id="upload-files" name="demo[]" #form
-                      multiple="multiple" accept="image/*" maxFileSize="10000000" customUpload="true"
-                      (uploadHandler)="upload($event,form)">
-          <ng-template pTemplate="content">
-            <ul *ngIf="uploadedFiles.length">
-              <li *ngFor="let file of uploadedFiles">{{file.name}} - {{file.size}} bytes</li>
-            </ul>
-          </ng-template>
-        </p-fileUpload>
+        <p-scrollPanel [style]="{width: '100%', height: '170px'}">
+          <p-fileUpload id="upload-files" name="demo[]" #form
+                        multiple="multiple" accept="image/*" maxFileSize="10000000" customUpload="true"
+                        (uploadHandler)="upload($event,form)">
+            <ng-template pTemplate="content">
+              <ul *ngIf="uploadedFiles.length">
+                <li *ngFor="let file of uploadedFiles">{{file.name}} - {{file.size}} bytes</li>
+              </ul>
+            </ng-template>
+          </p-fileUpload>
+        </p-scrollPanel>
       </div>
     </div>
+
   </form>
 
-  <p-dialog [(visible)]="uploadInProgress" modal="modal" width="55" [responsive]="true" [closable]="false">
-    <p-progressSpinner></p-progressSpinner>
+  <p-dialog [(visible)]="uploadInProgress" [responsive]="false" [closable]="false" [modal]="true"
+            [showHeader]="false" [width]="100" [height]="100" [minWidth]="100" [minHeight]="100">
+    <p-progressSpinner [style]="{width: '70px', height: '70px'}"></p-progressSpinner>
   </p-dialog>
 </div>

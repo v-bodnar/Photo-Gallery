@@ -83,18 +83,18 @@ public class UserController {
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @RequestMapping(value = "/users/", method = RequestMethod.PUT)
     public ResponseEntity<User> updateUser(@RequestBody User user) {
-        Optional<User> currentUser = usersRepository.findById(user.getId());
+        Optional<User> currentUserOp = usersRepository.findById(user.getId());
 
-        if (!currentUser.isPresent()) {
+        if (!currentUserOp.isPresent()) {
             log.error("User with id " + user.getId() + " not found");
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setEnabled(true);
-        user.setAuthorities((ArrayList) authorityRepository.findAllById(user.getAuthorities().stream().map(authority -> authority.getId()).collect(Collectors.toList())));
-        user.setLastPasswordResetDate(new Date());
-        return new ResponseEntity<>(usersRepository.save(user), HttpStatus.OK);
+        User currentUser = currentUserOp.get();
+        currentUser.setPassword(passwordEncoder.encode(user.getPassword()));
+        currentUser.setAuthorities((ArrayList) authorityRepository.findAllById(user.getAuthorities().stream().map(authority -> authority.getId()).collect(Collectors.toList())));
+        currentUser.setLastPasswordResetDate(new Date());
+        return new ResponseEntity<>(usersRepository.save(currentUser), HttpStatus.OK);
     }
 
     //------------------- Delete a User --------------------------------------------------------

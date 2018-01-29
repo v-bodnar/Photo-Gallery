@@ -10,7 +10,7 @@ import {
   AutoCompleteModule, CalendarModule, ChipsModule, DataTableModule, DialogModule, DropdownModule, FileUploadModule,
   GrowlModule,
   MenubarModule,
-  MessageModule, ProgressSpinnerModule, TreeModule
+  MessageModule, ProgressSpinnerModule, ScrollPanelModule, TreeModule
 } from "primeng/primeng";
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {TagService} from "./services/tag.service";
@@ -52,7 +52,8 @@ import {UsersService} from "./services/users.service";
     AppRoutingModule,
     DataTableModule,
     DropdownModule,
-    ProgressSpinnerModule
+    ProgressSpinnerModule,
+    ScrollPanelModule
 
   ],
   providers: [

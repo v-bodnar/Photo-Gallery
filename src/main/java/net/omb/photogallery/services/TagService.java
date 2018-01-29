@@ -14,7 +14,7 @@ public class TagService {
     @Autowired
     private TagRepository tagRepository;
 
-    public List<Tag> findAndSaveIfNotExist(List<String> names){
+    public synchronized List<Tag> findAndSaveIfNotExist(List<String> names){
         List<Tag> tags = tagRepository.findByNames(names);
         List<String> existingTags = tags.stream().map(tag -> tag.getName()).collect(Collectors.toList());
         names.removeAll(existingTags);

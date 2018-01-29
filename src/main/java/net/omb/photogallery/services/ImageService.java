@@ -372,16 +372,16 @@ public class ImageService {
     public String getFormat(Path file) {
         try {
             String format = Files.probeContentType(file);
-
+            log.debug("Format of file: " + file + " - " + format);
             for (String imageFormat : ImageIO.getWriterFormatNames()) {
                 if ( format != null && format.contains(imageFormat)) return imageFormat;
             }
         } catch (IOException e) {
             log.error("Error getting file format from " + file, e);
-            return "";
+            return "jpeg";
         }
 
-        return "";
+        return "jpeg";
     }
 
 
